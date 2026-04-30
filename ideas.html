@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ideas — Idea Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0ede8; --surface:#faf9f7; --surface2:#f3f0eb; --border:#e2ddd6;
+  --text:#1a1714; --text-muted:#7a7470; --text-light:#a09a94;
+  --accent:#2d5016; --accent-light:#4a7a28; --accent-bg:#e8f0e0;
+  --danger:#8b2020; --danger-bg:#f5e0e0; --gold:#a07830; --gold-bg:#fef9ec;
+  --upvote:#2d7a16; --downvote:#8b2020;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08); --shadow:0 4px 16px rgba(0,0,0,0.10);
+  --radius:12px; --radius-sm:6px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --tr:0.16s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+
+/* ─── HEADER ─── */
+#ideas-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+.ideas-header-title{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--accent);letter-spacing:-0.4px;}
+.ideas-header-title span{font-weight:400;color:var(--text-muted);font-size:15px;margin-left:4px;}
+.back-link{font-size:12px;color:var(--text-muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);text-decoration:none;transition:all var(--tr);}
+.back-link:hover{background:var(--border);color:var(--text);}
+.header-spacer{flex:1;}
+.user-chip{font-size:12px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;}
+
+/* ─── TOOLBAR ─── */
+#ideas-toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 11px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--tr);font-family:var(--font-body);white-space:nowrap;}
+.btn:hover{background:var(--border);}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-accent:hover{background:var(--accent-light);border-color:var(--accent-light);}
+.btn-sm{padding:3px 8px;font-size:11px;}
+.toolbar-select{padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-body);background:var(--surface2);color:var(--text);outline:none;cursor:pointer;}
+.toolbar-select:focus{border-color:var(--accent);}
+.toolbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+.toolbar-label{font-size:11px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
+.toolbar-check{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none;}
+.toolbar-check input{accent-color:var(--accent);}
+
+/* ─── FEED ─── */
+#ideas-feed{max-width:860px;margin:0 auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px;}
+
+/* ─── IDEA CARD ─── */
+.idea-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow var(--tr);}
+.idea-card:hover{box-shadow:var(--shadow);}
+.idea-card.private-card{border-left:3px solid var(--gold);}
+.idea-card-top{padding:14px 16px 10px;}
+.idea-card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.idea-votes{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;padding-top:2px;}
+.vote-btn{background:none;border:1px solid var(--border);border-radius:4px;width:28px;height:24px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all var(--tr);font-family:var(--font-body);}
+.vote-btn:hover.up{background:var(--accent-bg);border-color:var(--accent);color:var(--upvote);}
+.vote-btn:hover.down{background:var(--danger-bg);border-color:#d9a0a0;color:var(--downvote);}
+.vote-btn.voted-up{background:var(--accent-bg);border-color:var(--accent);color:var(--upvote);}
+.vote-btn.voted-down{background:var(--danger-bg);border-color:#d9a0a0;color:var(--downvote);}
+.vote-score{font-size:12px;font-weight:600;color:var(--text-muted);}
+.vote-score.positive{color:var(--upvote);}
+.vote-score.negative{color:var(--downvote);}
+.idea-main{flex:1;min-width:0;}
+.idea-title-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
+.idea-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);line-height:1.3;}
+.idea-badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-weight:500;}
+.idea-badge.private{background:#fef9ec;border-color:#e8d88c;color:#786020;}
+.idea-badge.virtual{background:#e8f0e0;border-color:#c0d8a0;color:var(--accent);}
+.idea-meta{font-size:11px;color:var(--text-light);margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.idea-meta-sep{opacity:0.4;}
+.idea-desc{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:8px;}
+.idea-desc.collapsed{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.expand-link{font-size:11px;color:var(--accent-light);cursor:pointer;font-weight:500;}
+.expand-link:hover{text-decoration:underline;}
+.idea-img{width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:8px;display:block;}
+.idea-actions{display:flex;align-items:center;gap:6px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;}
+.action-btn{background:none;border:1px solid transparent;color:var(--text-muted);font-size:11px;padding:3px 8px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);font-weight:500;transition:all var(--tr);display:flex;align-items:center;gap:4px;}
+.action-btn:hover{background:var(--border);color:var(--text);}
+.action-btn.fav.starred{color:var(--gold);}
+.action-btn.collab{color:var(--accent-light);}
+.action-btn.report{color:var(--text-light);margin-left:auto;}
+.action-btn.report:hover{color:var(--danger);}
+.swap-indicator{font-size:10px;padding:2px 7px;border-radius:10px;background:#fff3cd;border:1px solid #ffc107;color:#856404;font-weight:600;margin-left:auto;}
+
+/* ─── COMMENTS ─── */
+.comments-section{padding:0 16px 12px;border-top:1px solid var(--border);}
+.comments-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);padding:10px 0 6px;display:flex;align-items:center;gap:6px;}
+.comment-thread{margin-bottom:4px;}
+.comment-item{padding:8px 10px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);margin-bottom:6px;position:relative;}
+.comment-item.reply{margin-left:20px;border-left:2px solid var(--border);}
+.comment-item.private-comment{border-left:3px solid var(--gold);}
+.comment-header{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;}
+.comment-author{font-size:11px;font-weight:600;color:var(--accent);}
+.comment-time{font-size:10px;color:var(--text-light);}
+.comment-text{font-size:12px;color:var(--text);line-height:1.55;}
+.comment-actions{display:flex;gap:6px;margin-top:5px;align-items:center;}
+.comment-vote{background:none;border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-size:11px;cursor:pointer;color:var(--text-muted);font-family:var(--font-body);transition:all var(--tr);}
+.comment-vote:hover{background:var(--border);}
+.comment-vote.up:hover,.comment-vote.voted-up{color:var(--upvote);border-color:var(--accent);background:var(--accent-bg);}
+.comment-vote.down:hover,.comment-vote.voted-down{color:var(--downvote);border-color:#d9a0a0;background:var(--danger-bg);}
+.comment-score{font-size:11px;font-weight:600;color:var(--text-muted);}
+.comment-reply-btn{font-size:11px;color:var(--accent-light);cursor:pointer;background:none;border:none;font-family:var(--font-body);padding:0;}
+.comment-reply-btn:hover{text-decoration:underline;}
+.swap-badge{font-size:9px;padding:1px 5px;border-radius:3px;background:#d4edda;color:#155724;border:1px solid #c3e6cb;font-weight:700;margin-left:2px;}
+.add-comment-row{display:flex;gap:6px;margin-top:8px;}
+.add-comment-row input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-body);background:var(--surface);outline:none;}
+.add-comment-row input:focus{border-color:var(--accent);}
+
+/* ─── MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.52);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:26px;min-width:340px;max-width:560px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);max-height:92vh;overflow-y:auto;}
+.modal-title{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px;color:var(--text);}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+.form-group{margin-bottom:12px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);color:var(--text);background:var(--surface);transition:border-color var(--tr);outline:none;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);cursor:pointer;user-select:none;}
+.form-checkbox-row input{accent-color:var(--accent);}
+
+/* ─── EMPTY/LOADING ─── */
+.feed-empty{text-align:center;padding:60px 24px;color:var(--text-light);}
+.feed-empty h2{font-family:var(--font-display);font-size:22px;color:var(--text-muted);margin-bottom:8px;}
+.feed-empty p{font-size:13px;max-width:320px;margin:0 auto;}
+
+/* ─── SWAP ANIMATION ─── */
+@keyframes swapFlash{0%{background:#fffde7;}100%{background:var(--surface);}}
+.just-swapped{animation:swapFlash 1.2s ease;}
+
+/* ─── IMAGE UPLOAD PREVIEW ─── */
+#img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:var(--radius-sm);margin-top:8px;display:none;}
+
+@media(max-width:640px){
+  #ideas-toolbar{padding:8px 12px;}
+  #ideas-feed{padding:12px;}
+  .idea-card-top{padding:10px 12px 8px;}
+}
+</style>
+</head>
+<body>
+
+<header id="ideas-header">
+  <a class="back-link" href="index.html">← Dashboard</a>
+  <div class="ideas-header-title">Idea Index <span>/ Ideas</span></div>
+  <div class="header-spacer"></div>
+  <div class="user-chip" id="ideas-user-chip">Loading…</div>
+</header>
+
+<div id="ideas-toolbar">
+  <button class="btn btn-accent" onclick="openPostIdeaModal()">✦ Post Idea</button>
+  <div class="toolbar-sep"></div>
+
+  <span class="toolbar-label">Filter</span>
+  <select class="toolbar-select" id="filter-person">
+    <option value="">All people</option>
+  </select>
+  <select class="toolbar-select" id="filter-category">
+    <option value="">All categories</option>
+  </select>
+  <label class="toolbar-check">
+    <input type="checkbox" id="filter-virtual"> Virtual only
+  </label>
+  <label class="toolbar-check">
+    <input type="checkbox" id="filter-favorites"> ★ Favorites
+  </label>
+  <label class="toolbar-check">
+    <input type="checkbox" id="filter-fav-people"> Fav people
+  </label>
+  <label class="toolbar-check">
+    <input type="checkbox" id="filter-my-private"> 🔒 My private
+  </label>
+
+  <div class="toolbar-sep"></div>
+  <span class="toolbar-label">Sort</span>
+  <select class="toolbar-select" id="sort-by">
+    <option value="recent">Most recent</option>
+    <option value="liked">Most liked (net)</option>
+    <option value="upvoted">Most upvoted</option>
+  </select>
+</div>
+
+<div id="ideas-feed">
+  <div class="feed-empty"><h2>Loading…</h2></div>
+</div>
+
+<div id="modal-container"></div>
+
+<script>
+/* ─────────────────────────────────────────
+   STORAGE KEYS (shared with index.html)
+───────────────────────────────────────── */
+const USERS_KEY   = 'ideaIndex_users';
+const SESSION_KEY = 'ideaIndex_session';
+const IDEAS_KEY   = 'ideaIndex_ideas';
+const ABUSE_KEY   = 'ideaIndex_abuse';
+
+const IDEA_CATEGORIES = ['Housing','Transportation','Education','Technology','Travel',
+  'Experiences','Healthcare','Money Management','Shopping','Design','Business'];
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let currentUser = null;
+let expandedIdeas = new Set();    // idea IDs with expanded description
+let replyTargets  = {};           // ideaId -> commentId (null = top-level reply box open)
+
+/* ─────────────────────────────────────────
+   DEBOUNCE UTILITY
+───────────────────────────────────────── */
+function debounce(fn, ms){
+  let timer;
+  return function(...args){ clearTimeout(timer); timer=setTimeout(()=>fn.apply(this,args), ms); };
+}
+// Debounced version of renderFeed for filter changes (prevents rapid re-renders)
+let renderFeedDebounced;
+
+/* ─────────────────────────────────────────
+   STORAGE HELPERS
+───────────────────────────────────────── */
+function getUsers()  { try{return JSON.parse(localStorage.getItem(USERS_KEY))||[];}catch{return [];} }
+function saveUsers(u){ try{localStorage.setItem(USERS_KEY,JSON.stringify(u));}catch(e){console.error('Storage error:',e);} }
+function getIdeas()  { try{return JSON.parse(localStorage.getItem(IDEAS_KEY))||[];}catch{return [];} }
+function saveIdeas(i){ try{localStorage.setItem(IDEAS_KEY,JSON.stringify(i));}catch(e){console.error('Storage error:',e);alert('Storage full — try exporting data and removing large images.');} }
+function getAbuse()  { try{return JSON.parse(localStorage.getItem(ABUSE_KEY))||[];}catch{return [];} }
+function saveAbuse(a){ try{localStorage.setItem(ABUSE_KEY,JSON.stringify(a));}catch(e){console.error('Storage error:',e);} }
+
+function getCurrentUserData(){
+  if(!currentUser) return null;
+  return getUsers().find(u=>u.id===currentUser.id)||null;
+}
+function updateUserData(fn){
+  const us=getUsers(); const i=us.findIndex(u=>u.id===currentUser.id);
+  if(i<0)return; fn(us[i]); saveUsers(us); currentUser=us[i];
+}
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function timeAgo(ts){
+  const d=(Date.now()-new Date(ts).getTime())/1000;
+  if(d<60) return 'just now';
+  if(d<3600) return Math.floor(d/60)+'m ago';
+  if(d<86400) return Math.floor(d/3600)+'h ago';
+  return Math.floor(d/86400)+'d ago';
+}
+
+/* ─────────────────────────────────────────
+   AUTH CHECK
+───────────────────────────────────────── */
+function initPage(){
+  const id = sessionStorage.getItem(SESSION_KEY);
+  if(!id){ window.location.href='index.html'; return; }
+  const u = getUsers().find(u=>u.id===id);
+  if(!u){ window.location.href='index.html'; return; }
+  currentUser = u;
+  // Migrate user fields
+  updateUserData(u=>{
+    if(!u.favoriteIdeas)  u.favoriteIdeas=[];
+    if(!u.favoritePeople) u.favoritePeople=[];
+  });
+  document.getElementById('ideas-user-chip').textContent = currentUser.name;
+  populateFilterDropdowns();
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   FILTER DROPDOWNS
+───────────────────────────────────────── */
+function populateFilterDropdowns(){
+  const user = getCurrentUserData();
+  // Person filter: self + accepted connections
+  const personSel = document.getElementById('filter-person');
+  personSel.innerHTML='<option value="">All people</option>';
+  personSel.innerHTML+=`<option value="${currentUser.id}">My ideas</option>`;
+  (user.people||[]).filter(p=>p.connectionStatus==='accepted').forEach(p=>{
+    personSel.innerHTML+=`<option value="${p.id}">${escH(p.name)}</option>`;
+  });
+
+  // Category filter
+  const catSel = document.getElementById('filter-category');
+  // collect custom categories from posted ideas too
+  const ideas = getIdeas();
+  const extraCats = [...new Set(ideas.map(i=>i.category))].filter(c=>!IDEA_CATEGORIES.includes(c));
+  catSel.innerHTML='<option value="">All categories</option>';
+  [...IDEA_CATEGORIES,...extraCats].forEach(c=>{
+    catSel.innerHTML+=`<option value="${c}">${escH(c)}</option>`;
+  });
+}
+
+/* ─────────────────────────────────────────
+   VISIBILITY: which ideas can current user see?
+───────────────────────────────────────── */
+function visibleIdeas(){
+  const user = getCurrentUserData();
+  const connectedIds = new Set((user.people||[]).filter(p=>p.connectionStatus==='accepted').map(p=>p.id));
+  connectedIds.add(currentUser.id);
+
+  // Filter controls
+  const filterPerson   = document.getElementById('filter-person')?.value||'';
+  const filterCat      = document.getElementById('filter-category')?.value||'';
+  const filterVirtual  = document.getElementById('filter-virtual')?.checked;
+  const filterFavs     = document.getElementById('filter-favorites')?.checked;
+  const filterFavPpl   = document.getElementById('filter-fav-people')?.checked;
+  const filterPrivate  = document.getElementById('filter-my-private')?.checked;
+  const sortBy         = document.getElementById('sort-by')?.value||'recent';
+
+  let ideas = getIdeas().filter(idea=>{
+    if(idea.isArchived) return false;
+    // Private visibility: only owner sees own private ideas (unless "show my private" checked)
+    if(!idea.isPublic){
+      if(idea.userId !== currentUser.id) return false;
+      if(!filterPrivate) return false;
+    }
+    // Public ideas: show if creator is self or a connection
+    if(idea.isPublic && !connectedIds.has(idea.userId) && idea.userId!==currentUser.id) return false;
+    // Person filter
+    if(filterPerson && idea.userId!==filterPerson) return false;
+    // Category filter
+    if(filterCat && idea.category!==filterCat) return false;
+    // Virtual only
+    if(filterVirtual && !idea.isVirtual) return false;
+    // Favorites
+    if(filterFavs && !(user.favoriteIdeas||[]).includes(idea.id)) return false;
+    // Fav people
+    if(filterFavPpl && !(user.favoritePeople||[]).includes(idea.userId)) return false;
+    return true;
+  });
+
+  // Sort
+  if(sortBy==='liked') ideas.sort((a,b)=>(b.upvotes-b.downvotes)-(a.upvotes-a.downvotes));
+  else if(sortBy==='upvoted') ideas.sort((a,b)=>b.upvotes-a.upvotes);
+  else ideas.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+  return ideas;
+}
+
+/* ─────────────────────────────────────────
+   RENDER FEED
+───────────────────────────────────────── */
+function renderFeed(){
+  const feed = document.getElementById('ideas-feed');
+  const ideas = visibleIdeas();
+
+  if(!ideas.length){
+    feed.innerHTML=`<div class="feed-empty">
+      <div style="font-size:40px;margin-bottom:12px;">💡</div>
+      <h2>No ideas yet</h2>
+      <p>Be the first to post an idea, or adjust your filters to see more.</p>
+    </div>`;
+    return;
+  }
+
+  feed.innerHTML='';
+  ideas.forEach(idea=>{ feed.appendChild(buildIdeaCard(idea)); });
+}
+
+/* ─────────────────────────────────────────
+   BUILD IDEA CARD
+───────────────────────────────────────── */
+function buildIdeaCard(idea){
+  const user     = getCurrentUserData();
+  const allUsers = getUsers();
+  const creator  = allUsers.find(u=>u.id===idea.userId);
+  const isOwner  = idea.userId === currentUser.id;
+  const isFav    = (user.favoriteIdeas||[]).includes(idea.id);
+  const isFavPerson = (user.favoritePeople||[]).includes(idea.userId);
+  const net      = idea.upvotes - idea.downvotes;
+  const expanded = expandedIdeas.has(idea.id);
+
+  // User vote state
+  const myVoteUp   = (idea.voterIds||{}).up?.includes(currentUser.id);
+  const myVoteDown = (idea.voterIds||{}).down?.includes(currentUser.id);
+
+  const card = document.createElement('div');
+  card.className = 'idea-card'+(idea.isPublic?'':' private-card');
+  card.id = 'idea-card-'+idea.id;
+
+  // ── Header section
+  const descText = idea.description||'';
+  const isLong   = descText.length > 220;
+
+  card.innerHTML = `
+  <div class="idea-card-top">
+    <div class="idea-card-header">
+      <div class="idea-votes">
+        <button class="vote-btn up ${myVoteUp?'voted-up':''}" onclick="voteIdea('${idea.id}','up')" title="Upvote">▲</button>
+        <span class="vote-score ${net>0?'positive':net<0?'negative':''}">${net}</span>
+        <button class="vote-btn down ${myVoteDown?'voted-down':''}" onclick="voteIdea('${idea.id}','down')" title="Downvote">▼</button>
+      </div>
+      <div class="idea-main">
+        <div class="idea-title-row">
+          <span class="idea-title">${escH(idea.title)}</span>
+          ${!idea.isPublic?'<span class="idea-badge private">🔒 Private</span>':''}
+          ${idea.isVirtual?'<span class="idea-badge virtual">🌐 Virtual</span>':''}
+          <span class="idea-badge">${escH(idea.category)}</span>
+        </div>
+        <div class="idea-meta">
+          <span>${escH(creator?.name||'Unknown')}</span>
+          ${isFavPerson?'<span>⭐</span>':''}
+          <span class="idea-meta-sep">·</span>
+          ${idea.location&&!idea.isVirtual?`<span>📍 ${escH(idea.location)}</span><span class="idea-meta-sep">·</span>`:''}
+          <span>${timeAgo(idea.createdAt)}</span>
+          <span class="idea-meta-sep">·</span>
+          <span>▲${idea.upvotes} ▼${idea.downvotes}</span>
+        </div>
+        ${idea.imageBase64?`<img class="idea-img" src="${idea.imageBase64}" alt="Idea image">`:''}
+        <div class="idea-desc ${isLong&&!expanded?'collapsed':''}" id="desc-${idea.id}">${escH(descText)}</div>
+        ${isLong?`<span class="expand-link" onclick="toggleExpand('${idea.id}')">${expanded?'Show less ↑':'Read more ↓'}</span>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="idea-actions">
+    <button class="action-btn fav ${isFav?'starred':''}" onclick="toggleFavoriteIdea('${idea.id}')">
+      ${isFav?'★':'☆'} ${isFav?'Saved':'Save'}
+    </button>
+    <button class="action-btn collab" onclick="openCollabModal('${idea.id}')">🤝 Collab Interest</button>
+    ${isOwner?`
+      <button class="action-btn" onclick="openEditIdeaModal('${idea.id}')">✏️ Edit</button>
+      <button class="action-btn" onclick="archiveIdea('${idea.id}')">Archive</button>
+    `:''}
+    <button class="action-btn" onclick="toggleFavPerson('${idea.userId}')">
+      ${isFavPerson?'⭐ Unstar person':'☆ Star person'}
+    </button>
+    <button class="action-btn report" onclick="openReportModal('${idea.id}',null)">Report</button>
+    <span style="font-size:11px;color:var(--text-light);margin-left:auto;">
+      💬 ${(idea.comments||[]).filter(c=>!c.parentId).length} comments
+    </span>
+  </div>
+  <div class="comments-section" id="comments-${idea.id}">
+    ${renderCommentsHTML(idea)}
+  </div>`;
+
+  return card;
+}
+
+/* ─────────────────────────────────────────
+   RENDER COMMENTS HTML
+───────────────────────────────────────── */
+function renderCommentsHTML(idea){
+  const comments = idea.comments||[];
+  const topLevel = comments.filter(c=>!c.parentId);
+  const allUsers = getUsers();
+
+  let h = `<div class="comments-header">💬 Comments`;
+  if(topLevel.length) h+=` <span style="font-size:12px;font-weight:400;color:var(--text-muted);">(${topLevel.length})</span>`;
+  h+=`</div>`;
+
+  function buildComment(c, depth=0){
+    const author = allUsers.find(u=>u.id===c.userId);
+    const replies = comments.filter(r=>r.parentId===c.id);
+    const myVoteUp = (c.voterIds||{}).up?.includes(currentUser.id);
+    const myVoteDown = (c.voterIds||{}).down?.includes(currentUser.id);
+    const net = c.upvotes - c.downvotes;
+    const isOwner = c.userId===currentUser.id||idea.userId===currentUser.id;
+
+    h+=`<div class="comment-item ${depth>0?'reply':''} ${!c.isPublic?'private-comment':''}" id="comment-${c.id}">
+      <div class="comment-header">
+        <span class="comment-author">${escH(author?.name||'Unknown')}</span>
+        ${!c.isPublic?'<span style="font-size:9px;background:#fef9ec;border:1px solid #e8d88c;color:#786020;padding:1px 4px;border-radius:3px;font-weight:700;">🔒</span>':''}
+        <span class="comment-time">${timeAgo(c.createdAt)}</span>
+        ${c.wasSwapped?'<span class="swap-badge">♻ was idea</span>':''}
+      </div>
+      <div class="comment-text">${escH(c.text)}</div>
+      <div class="comment-actions">
+        <button class="comment-vote up ${myVoteUp?'voted-up':''}" onclick="voteComment('${idea.id}','${c.id}','up')">▲ ${c.upvotes}</button>
+        <button class="comment-vote down ${myVoteDown?'voted-down':''}" onclick="voteComment('${idea.id}','${c.id}','down')">▼ ${c.downvotes}</button>
+        <span class="comment-score" style="${net>0?'color:var(--upvote)':net<0?'color:var(--downvote)':''}">${net>0?'+'+net:net}</span>
+        <button class="comment-reply-btn" onclick="openReplyBox('${idea.id}','${c.id}')">Reply</button>
+        <button class="comment-reply-btn" onclick="openReportModal('${idea.id}','${c.id}')" style="color:var(--text-light);margin-left:auto;">Report</button>
+      </div>
+    </div>`;
+    replies.forEach(r=>buildComment(r, depth+1));
+  }
+
+  topLevel.forEach(c=>buildComment(c));
+
+  // Add comment input (shown always at idea level)
+  h+=`<div class="add-comment-row" id="reply-box-${idea.id}-null">
+    <input type="text" placeholder="Add a comment…" id="comment-input-${idea.id}" onkeydown="if(event.key==='Enter')submitComment('${idea.id}',null)">
+    <button class="btn btn-sm btn-accent" onclick="submitComment('${idea.id}',null)">Post</button>
+    <label class="toolbar-check" style="font-size:11px;" title="Private comments visible only to you">
+      <input type="checkbox" id="comment-private-${idea.id}"> 🔒
+    </label>
+  </div>`;
+
+  return h;
+}
+
+/* ─────────────────────────────────────────
+   EXPAND / COLLAPSE
+───────────────────────────────────────── */
+function toggleExpand(ideaId){
+  if(expandedIdeas.has(ideaId)) expandedIdeas.delete(ideaId);
+  else expandedIdeas.add(ideaId);
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   VOTING — IDEAS
+───────────────────────────────────────── */
+function voteIdea(ideaId, dir){
+  const ideas = getIdeas();
+  const idea  = ideas.find(i=>i.id===ideaId);
+  if(!idea) return;
+  // Private ideas: only owner can vote
+  if(!idea.isPublic && idea.userId!==currentUser.id){ alert('You can only vote on your own private ideas.'); return; }
+
+  if(!idea.voterIds) idea.voterIds={up:[],down:[]};
+  const opp = dir==='up'?'down':'up';
+
+  if(idea.voterIds[dir].includes(currentUser.id)){
+    // Toggle off
+    idea.voterIds[dir] = idea.voterIds[dir].filter(id=>id!==currentUser.id);
+    idea[dir==='up'?'upvotes':'downvotes'] = Math.max(0,(idea[dir==='up'?'upvotes':'downvotes']||0)-1);
+  } else {
+    // Remove opposite
+    if(idea.voterIds[opp].includes(currentUser.id)){
+      idea.voterIds[opp] = idea.voterIds[opp].filter(id=>id!==currentUser.id);
+      idea[opp==='up'?'upvotes':'downvotes'] = Math.max(0,(idea[opp==='up'?'upvotes':'downvotes']||0)-1);
+    }
+    idea.voterIds[dir].push(currentUser.id);
+    idea[dir==='up'?'upvotes':'downvotes'] = (idea[dir==='up'?'upvotes':'downvotes']||0)+1;
+  }
+  saveIdeas(ideas);
+  // Check for swaps (only public ideas participate)
+  if(idea.isPublic) checkCommentSwap(ideaId);
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   VOTING — COMMENTS
+───────────────────────────────────────── */
+function voteComment(ideaId, commentId, dir){
+  const ideas = getIdeas();
+  const idea  = ideas.find(i=>i.id===ideaId);
+  if(!idea) return;
+  const comment = idea.comments.find(c=>c.id===commentId);
+  if(!comment) return;
+  if(!comment.isPublic && comment.userId!==currentUser.id){ alert('Private comment.'); return; }
+
+  if(!comment.voterIds) comment.voterIds={up:[],down:[]};
+  const opp = dir==='up'?'down':'up';
+
+  if(comment.voterIds[dir].includes(currentUser.id)){
+    comment.voterIds[dir] = comment.voterIds[dir].filter(id=>id!==currentUser.id);
+    comment[dir==='up'?'upvotes':'downvotes'] = Math.max(0,(comment[dir==='up'?'upvotes':'downvotes']||0)-1);
+  } else {
+    if(comment.voterIds[opp].includes(currentUser.id)){
+      comment.voterIds[opp] = comment.voterIds[opp].filter(id=>id!==currentUser.id);
+      comment[opp==='up'?'upvotes':'downvotes'] = Math.max(0,(comment[opp==='up'?'upvotes':'downvotes']||0)-1);
+    }
+    comment.voterIds[dir].push(currentUser.id);
+    comment[dir==='up'?'upvotes':'downvotes'] = (comment[dir==='up'?'upvotes':'downvotes']||0)+1;
+  }
+  saveIdeas(ideas);
+  // Check swap
+  if(idea.isPublic && !comment.parentId) checkCommentSwap(ideaId);
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   COMMENT SWAP — The Revolutionary Feature
+   Rule: if top-level comment.upvotes > idea.upvotes → comment becomes the new idea
+───────────────────────────────────────── */
+function checkCommentSwap(ideaId){
+  let ideas = getIdeas();
+  const idea = ideas.find(i=>i.id===ideaId);
+  if(!idea||!idea.isPublic) return;
+
+  const topComments = (idea.comments||[]).filter(c=>!c.parentId&&c.isPublic);
+  if(!topComments.length) return;
+
+  // Find the qualifying comment with highest upvotes
+  const winner = topComments
+    .filter(c=>c.upvotes > idea.upvotes)
+    .sort((a,b)=>b.upvotes-a.upvotes)[0];
+
+  if(!winner) return;
+
+  // ── PERFORM SWAP ──
+  // 1. New idea from winning comment
+  const newIdeaId = uid();
+  const newIdea = {
+    id:       newIdeaId,
+    userId:   winner.userId,
+    title:    winner.text.slice(0,50)+(winner.text.length>50?'…':''),
+    description: winner.text,
+    category: idea.category,
+    location: idea.location,
+    isVirtual: idea.isVirtual,
+    imageBase64: null,
+    upvotes:  winner.upvotes,
+    downvotes: winner.downvotes,
+    voterIds: winner.voterIds||{up:[],down:[]},
+    isPublic: true,
+    isArchived: false,
+    isFavorite: false,
+    createdAt: winner.createdAt,
+    comments: []
+  };
+
+  // 2. Convert original idea into a comment under new idea
+  const demotedComment = {
+    id:        uid(),
+    userId:    idea.userId,
+    text:      `[Original idea] ${idea.title}: ${idea.description}`,
+    upvotes:   idea.upvotes,
+    downvotes: idea.downvotes,
+    voterIds:  idea.voterIds||{up:[],down:[]},
+    parentId:  null,
+    isPublic:  true,
+    wasSwapped: true,
+    createdAt: idea.createdAt
+  };
+
+  // 3. Migrate non-winning top-level comments to new idea, mark demoted comment
+  const migratedComments = (idea.comments||[])
+    .filter(c=>c.id!==winner.id)
+    .map(c=>({ ...c, parentId: c.parentId===winner.id ? null : c.parentId }));
+
+  newIdea.comments = [demotedComment, ...migratedComments];
+
+  // 4. Remove old idea, insert new idea in its place
+  const idx = ideas.findIndex(i=>i.id===ideaId);
+  ideas.splice(idx, 1, newIdea);
+  saveIdeas(ideas);
+
+  // Flash notification
+  setTimeout(()=>{
+    const card = document.getElementById('idea-card-'+newIdeaId);
+    if(card) card.classList.add('just-swapped');
+  }, 100);
+}
+
+/* ─────────────────────────────────────────
+   COMMENTS — SUBMIT
+───────────────────────────────────────── */
+function submitComment(ideaId, parentId){
+  // parentId is null for top-level, a comment id for reply
+  const inputId = parentId ? `reply-input-${ideaId}-${parentId}` : `comment-input-${ideaId}`;
+  const privId  = parentId ? `reply-private-${ideaId}-${parentId}` : `comment-private-${ideaId}`;
+  const input   = document.getElementById(inputId);
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text){ alert('Comment text required.'); return; }
+  const isPrivate = document.getElementById(privId)?.checked||false;
+
+  const ideas = getIdeas();
+  const idea  = ideas.find(i=>i.id===ideaId);
+  if(!idea) return;
+  if(!idea.comments) idea.comments=[];
+  const comment = {
+    id: uid(), userId: currentUser.id, text,
+    upvotes:0, downvotes:0, voterIds:{up:[],down:[]},
+    parentId: parentId||null,
+    isPublic: !isPrivate,
+    createdAt: new Date().toISOString()
+  };
+  idea.comments.push(comment);
+  saveIdeas(ideas);
+  input.value='';
+  renderFeed();
+}
+
+function openReplyBox(ideaId, commentId){
+  // Inject inline reply box after the comment
+  const el = document.getElementById('comment-'+commentId);
+  if(!el) return;
+  // Remove existing reply box if open
+  const existing = document.getElementById(`reply-box-${ideaId}-${commentId}`);
+  if(existing){ existing.remove(); return; }
+  const box = document.createElement('div');
+  box.className='add-comment-row reply';
+  box.id=`reply-box-${ideaId}-${commentId}`;
+  box.style.marginLeft='20px';box.style.marginTop='4px';
+  box.innerHTML=`
+    <input type="text" placeholder="Write a reply…" id="reply-input-${ideaId}-${commentId}"
+      onkeydown="if(event.key==='Enter')submitComment('${ideaId}','${commentId}')">
+    <button class="btn btn-sm btn-accent" onclick="submitComment('${ideaId}','${commentId}')">Reply</button>
+    <label class="toolbar-check" style="font-size:11px;">
+      <input type="checkbox" id="reply-private-${ideaId}-${commentId}"> 🔒
+    </label>`;
+  el.after(box);
+  document.getElementById(`reply-input-${ideaId}-${commentId}`)?.focus();
+}
+
+/* ─────────────────────────────────────────
+   FAVORITES
+───────────────────────────────────────── */
+function toggleFavoriteIdea(ideaId){
+  updateUserData(u=>{
+    if(!u.favoriteIdeas) u.favoriteIdeas=[];
+    const i=u.favoriteIdeas.indexOf(ideaId);
+    if(i>=0) u.favoriteIdeas.splice(i,1); else u.favoriteIdeas.push(ideaId);
+  });
+  renderFeed();
+}
+
+function toggleFavPerson(userId){
+  updateUserData(u=>{
+    if(!u.favoritePeople) u.favoritePeople=[];
+    const i=u.favoritePeople.indexOf(userId);
+    if(i>=0) u.favoritePeople.splice(i,1); else u.favoritePeople.push(userId);
+  });
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   COLLAB INTEREST
+───────────────────────────────────────── */
+function openCollabModal(ideaId){
+  const ideas = getIdeas();
+  const idea  = ideas.find(i=>i.id===ideaId);
+  if(!idea) return;
+  const allUsers = getUsers();
+  const user     = getCurrentUserData();
+  const connIds  = new Set((user.people||[]).filter(p=>p.connectionStatus==='accepted').map(p=>p.id));
+
+  // Register collab interest
+  if(!idea.collabIds) idea.collabIds=[];
+  if(!idea.collabIds.includes(currentUser.id)){
+    idea.collabIds.push(currentUser.id);
+    saveIdeas(ideas.map(i=>i.id===ideaId?idea:i));
+  }
+
+  // Who else is interested: connections who upvoted OR favorited OR marked collab
+  const interestedIds = new Set([
+    ...(idea.voterIds?.up||[]),
+    ...allUsers.filter(u=>(u.favoriteIdeas||[]).includes(ideaId)).map(u=>u.id),
+    ...idea.collabIds
+  ]);
+  interestedIds.delete(currentUser.id);
+  const interested = [...interestedIds]
+    .filter(id=>connIds.has(id))
+    .map(id=>allUsers.find(u=>u.id===id)?.name)
+    .filter(Boolean);
+
+  openModal(`<div class="modal-title">🤝 Collab Interest</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">People interested in collaborating on <strong>${escH(idea.title)}</strong>:</p>
+    ${interested.length
+      ? interested.map(n=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">👤 ${escH(n)} <button class="btn btn-sm" style="margin-left:8px;" onclick="alert('Messaging coming in a future prompt!')">Send message</button></div>`).join('')
+      : '<div class="feed-empty" style="padding:20px 0;min-height:0;"><p>No connected users have expressed interest yet. Your interest has been recorded!</p></div>'
+    }
+    <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+/* ─────────────────────────────────────────
+   REPORT ABUSE
+───────────────────────────────────────── */
+function openReportModal(ideaId, commentId){
+  openModal(`<div class="modal-title">Report Content</div>
+    <div class="form-group"><label class="form-label">Reason</label>
+      <select class="form-select" id="report-reason">
+        <option value="spam">Spam</option>
+        <option value="offensive">Offensive / Harmful</option>
+        <option value="misinformation">Misinformation</option>
+        <option value="other">Other</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Additional notes</label>
+      <textarea class="form-textarea" id="report-notes" placeholder="Optional details…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="submitReport('${ideaId}','${commentId||''}')">Submit Report</button>
+    </div>`);
+}
+
+function submitReport(ideaId, commentId){
+  const reason = document.getElementById('report-reason').value;
+  const notes  = document.getElementById('report-notes').value.trim();
+  const reports = getAbuse();
+  reports.push({ id:uid(), ideaId, commentId:commentId||null, reporterId:currentUser.id, reason, notes, createdAt:new Date().toISOString() });
+  saveAbuse(reports);
+  closeModal();
+  alert('Report submitted. Thank you.');
+}
+
+/* ─────────────────────────────────────────
+   POST / EDIT IDEA MODAL
+───────────────────────────────────────── */
+function openPostIdeaModal(editId=null){
+  const ideas = getIdeas();
+  const ex    = editId ? ideas.find(i=>i.id===editId) : null;
+
+  const catOptions = [...IDEA_CATEGORIES].map(c=>
+    `<option value="${c}" ${ex&&ex.category===c?'selected':''}>${escH(c)}</option>`
+  ).join('');
+
+  openModal(`
+    <div class="modal-title">${editId?'Edit Idea':'✦ Post a New Idea'}</div>
+    <div class="form-group"><label class="form-label">Title *</label>
+      <input class="form-input" id="idea-title" value="${ex?escA(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Description *</label>
+      <textarea class="form-textarea" style="min-height:100px;" id="idea-desc">${ex?escH(ex.description||''):''}</textarea></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-select" id="idea-cat">
+        ${catOptions}
+        <option value="__custom__">+ Add category…</option>
+      </select></div>
+    <div id="idea-custom-cat-row" style="display:none;margin-top:6px;">
+      <input class="form-input" id="idea-custom-cat" placeholder="Custom category name"></div>
+    <div class="form-group"><label class="form-label">Location</label>
+      <input class="form-input" id="idea-loc" value="${ex?escA(ex.location||''):''}" placeholder="City, country, or leave blank">
+    </div>
+    <label class="form-checkbox-row" style="margin-bottom:10px;">
+      <input type="checkbox" id="idea-virtual" ${ex&&ex.isVirtual?'checked':''}> 🌐 Virtual / Online idea
+    </label>
+    <div class="form-group"><label class="form-label">Image (optional, max ~500KB)</label>
+      <input type="file" accept="image/*" id="idea-img-file" onchange="previewImg()" style="font-size:12px;">
+      <img id="img-preview" src="" alt="preview">
+      ${ex&&ex.imageBase64?`<div style="margin-top:6px;font-size:11px;color:var(--text-light);">Current image saved. Upload new to replace.</div>`:''}
+    </div>
+    <label class="form-checkbox-row">
+      <input type="checkbox" id="idea-private" ${ex&&!ex.isPublic?'checked':''}> 🔒 Private (only visible to you)
+    </label>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="submitIdea('${editId||''}')">
+        ${editId?'Save Changes':'Post Idea'}
+      </button>
+    </div>`);
+
+  // Show custom cat input when selected
+  document.getElementById('idea-cat').addEventListener('change',function(){
+    document.getElementById('idea-custom-cat-row').style.display=this.value==='__custom__'?'':'none';
+  });
+}
+
+function openEditIdeaModal(ideaId){ openPostIdeaModal(ideaId); }
+
+function previewImg(){
+  const file = document.getElementById('idea-img-file').files[0];
+  if(!file) return;
+  if(file.size > 600000){ alert('Image too large. Please use an image under ~500KB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const prev = document.getElementById('img-preview');
+    prev.src=e.target.result; prev.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitIdea(editId){
+  const title = document.getElementById('idea-title').value.trim();
+  const desc  = document.getElementById('idea-desc').value.trim();
+  if(!title||!desc){ alert('Title and description are required.'); return; }
+
+  let category = document.getElementById('idea-cat').value;
+  if(category==='__custom__'){
+    category = document.getElementById('idea-custom-cat')?.value.trim();
+    if(!category){ alert('Please enter a custom category name.'); return; }
+  }
+
+  const loc       = document.getElementById('idea-loc').value.trim();
+  const isVirtual = document.getElementById('idea-virtual').checked;
+  const isPrivate = document.getElementById('idea-private').checked;
+  const prevEl    = document.getElementById('img-preview');
+  const imgSrc    = prevEl?.src && prevEl.style.display!=='none' ? prevEl.src : null;
+
+  const ideas = getIdeas();
+  if(editId){
+    const idea = ideas.find(i=>i.id===editId);
+    if(!idea) return;
+    idea.title=title; idea.description=desc; idea.category=category;
+    idea.location=loc; idea.isVirtual=isVirtual; idea.isPublic=!isPrivate;
+    // On toggling from private→public, keep existing vote counts (owner may have voted on own private idea)
+    if(imgSrc) idea.imageBase64=imgSrc;
+  } else {
+    ideas.unshift({
+      id:uid(), userId:currentUser.id, title, description:desc, category,
+      location:loc, isVirtual, imageBase64:imgSrc||null,
+      upvotes:0, downvotes:0, voterIds:{up:[],down:[]},
+      collabIds:[], isPublic:!isPrivate, isArchived:false,
+      createdAt:new Date().toISOString(), comments:[]
+    });
+  }
+  saveIdeas(ideas);
+  closeModal();
+  populateFilterDropdowns();
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   ARCHIVE IDEA
+───────────────────────────────────────── */
+function archiveIdea(ideaId){
+  if(!confirm('Archive this idea?')) return;
+  const ideas = getIdeas();
+  const idea  = ideas.find(i=>i.id===ideaId);
+  if(idea) idea.isArchived=true;
+  saveIdeas(ideas);
+  renderFeed();
+}
+
+/* ─────────────────────────────────────────
+   MODAL SYSTEM
+───────────────────────────────────────── */
+function openModal(html){
+  document.getElementById('modal-container').innerHTML=
+    `<div class="modal-overlay" onclick="handleOverlayClick(event)">
+      <div class="modal">${html}</div>
+    </div>`;
+}
+function closeModal(){ document.getElementById('modal-container').innerHTML=''; }
+function handleOverlayClick(e){ if(e.target.classList.contains('modal-overlay')) closeModal(); }
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', ()=>{
+  // Create debounced render after DOM ready
+  renderFeedDebounced = debounce(renderFeed, 120);
+  // Patch all filter onchange handlers to use debounced version
+  ['filter-person','filter-category','sort-by'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change', ()=>renderFeedDebounced());
+  });
+  ['filter-virtual','filter-favorites','filter-fav-people','filter-my-private'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change', ()=>renderFeedDebounced());
+  });
+  initPage();
+});
+</script>
+</body>
+</html>

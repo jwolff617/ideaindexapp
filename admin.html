@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Idea Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0ede8;--surface:#faf9f7;--surface2:#f3f0eb;--border:#e2ddd6;
+  --text:#1a1714;--text-muted:#7a7470;--text-light:#a09a94;
+  --accent:#2d5016;--accent-light:#4a7a28;--accent-bg:#e8f0e0;
+  --danger:#8b2020;--danger-bg:#f5e0e0;--gold:#a07830;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07);--shadow:0 4px 16px rgba(0,0,0,0.09);
+  --radius:10px;--radius-sm:6px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;--tr:0.16s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+.back-link{font-size:12px;color:var(--text-muted);padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);text-decoration:none;transition:all var(--tr);}
+.back-link:hover{background:var(--border);}
+.page-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--danger);}
+.header-spacer{flex:1;}
+.stats-bar{display:flex;gap:16px;font-size:12px;color:var(--text-muted);}
+.stat{font-weight:600;color:var(--text);}
+
+main{max-width:1100px;margin:0 auto;padding:20px;}
+
+/* SUMMARY CARDS */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow-sm);}
+.sum-card h3{font-size:22px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.sum-card p{font-size:11px;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;}
+.sum-card.danger h3{color:var(--danger);}
+.sum-card.gold h3{color:var(--gold);}
+.sum-card.green h3{color:var(--accent);}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:16px;}
+.tab{padding:6px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--text-muted);transition:all var(--tr);}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* TABLE */
+.reports-table{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
+.reports-table th{background:var(--surface2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.reports-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.reports-table tr:last-child td{border-bottom:none;}
+.reports-table tr:hover td{background:var(--surface2);}
+.status-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
+.status-pill.pending{background:#fff3cd;color:#856404;border:1px solid #ffd966;}
+.status-pill.resolved{background:var(--accent-bg);color:var(--accent);border:1px solid #c0d8a0;}
+.status-pill.dismissed{background:var(--surface2);color:var(--text-light);border:1px solid var(--border);}
+.action-btns{display:flex;gap:4px;flex-wrap:wrap;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:3px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;cursor:pointer;transition:all var(--tr);font-family:var(--font-body);}
+.btn:hover{background:var(--border);}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;}
+.btn-danger:hover{background:#eebbbb;}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.type-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600;}
+.type-idea{background:#e0f0ff;color:#1a5fa0;border:1px solid #b8d8f8;}
+.type-comment{background:#f0e8ff;color:#5a20a0;border:1px solid #d8b8f8;}
+.type-listing{background:var(--gold-bg,#fef9ec);color:var(--gold);border:1px solid #e8d88c;}
+.empty-state{text-align:center;padding:40px;color:var(--text-light);font-style:italic;}
+
+/* USERS TABLE */
+.users-table{width:100%;border-collapse:collapse;font-size:12px;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
+.users-table th{background:var(--surface2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-muted);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.users-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.users-table tr:hover td{background:var(--surface2);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:24px;min-width:340px;max-width:500px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:var(--font-display);font-size:17px;font-weight:600;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:11px;overflow:auto;max-height:300px;white-space:pre-wrap;word-break:break-all;}
+
+@media(max-width:768px){
+  .summary-row{grid-template-columns:1fr 1fr;}
+  .reports-table{display:block;overflow-x:auto;}
+  main{padding:12px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="back-link" href="index.html">← Dashboard</a>
+  <div class="page-title">🛡 Admin Panel</div>
+  <div class="header-spacer"></div>
+  <div class="stats-bar">
+    <span>Reports: <span class="stat" id="stat-reports">—</span></span>
+    <span>Users: <span class="stat" id="stat-users">—</span></span>
+    <span>Ideas: <span class="stat" id="stat-ideas">—</span></span>
+  </div>
+</header>
+
+<main>
+  <div id="access-denied" style="display:none;text-align:center;padding:60px;color:var(--danger);">
+    <div style="font-size:48px;margin-bottom:16px;">🚫</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:8px;">Access Denied</h2>
+    <p>Admin access requires login as <strong>admin@ideaindex.com</strong>.</p>
+    <a href="index.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:var(--accent);color:#fff;border-radius:var(--radius-sm);text-decoration:none;">Go to Dashboard</a>
+  </div>
+
+  <div id="admin-content" style="display:none;">
+    <div class="summary-row">
+      <div class="sum-card danger"><h3 id="sum-pending">0</h3><p>Pending Reports</p></div>
+      <div class="sum-card gold"><h3 id="sum-total">0</h3><p>Total Reports</p></div>
+      <div class="sum-card"><h3 id="sum-users">0</h3><p>Registered Users</p></div>
+      <div class="sum-card green"><h3 id="sum-ideas">0</h3><p>Public Ideas</p></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('reports',this)">Abuse Reports</div>
+      <div class="tab" onclick="switchTab('users',this)">All Users</div>
+      <div class="tab" onclick="switchTab('ideas',this)">All Ideas</div>
+    </div>
+
+    <div class="tab-panel active" id="tab-reports">
+      <table class="reports-table" id="reports-table">
+        <thead><tr>
+          <th>ID</th><th>Type</th><th>Reason</th><th>Reported By</th>
+          <th>Notes</th><th>Date</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="reports-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="tab-panel" id="tab-users">
+      <table class="users-table" id="users-table">
+        <thead><tr>
+          <th>Name</th><th>Email</th><th>Joined</th>
+          <th>Goals</th><th>Ideas</th><th>Connections</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="tab-panel" id="tab-ideas">
+      <table class="users-table" id="ideas-table">
+        <thead><tr>
+          <th>Title</th><th>Author</th><th>Category</th>
+          <th>Votes</th><th>Comments</th><th>Posted</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="ideas-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div id="modal-container"></div>
+
+<script>
+const USERS_KEY   = 'ideaIndex_users';
+const SESSION_KEY = 'ideaIndex_session';
+const IDEAS_KEY   = 'ideaIndex_ideas';
+const ABUSE_KEY   = 'ideaIndex_abuse';
+const MKT_KEY     = 'ideaIndex_market';
+const ADMIN_EMAIL = 'admin@ideaindex.com';
+
+let currentUser = null;
+
+function getUsers()    { try{return JSON.parse(localStorage.getItem(USERS_KEY))||[];}catch{return[];} }
+function saveUsers(u)  { localStorage.setItem(USERS_KEY,JSON.stringify(u)); }
+function getIdeas()    { try{return JSON.parse(localStorage.getItem(IDEAS_KEY))||[];}catch{return[];} }
+function saveIdeas(i)  { localStorage.setItem(IDEAS_KEY,JSON.stringify(i)); }
+function getReports()  { try{return JSON.parse(localStorage.getItem(ABUSE_KEY))||[];}catch{return[];} }
+function saveReports(r){ localStorage.setItem(ABUSE_KEY,JSON.stringify(r)); }
+function getListings() { try{return JSON.parse(localStorage.getItem(MKT_KEY))||[];}catch{return[];} }
+function saveListings(l){localStorage.setItem(MKT_KEY,JSON.stringify(l));}
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function timeAgo(ts){
+  const d=(Date.now()-new Date(ts).getTime())/1000;
+  if(d<60)return 'just now'; if(d<3600)return Math.floor(d/60)+'m ago';
+  if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago';
+}
+
+/* ─── INIT ─── */
+function initPage(){
+  const sid=sessionStorage.getItem(SESSION_KEY);
+  if(!sid){window.location.href='index.html';return;}
+  const u=getUsers().find(u=>u.id===sid);
+  if(!u){window.location.href='index.html';return;}
+  currentUser=u;
+
+  if(currentUser.email!==ADMIN_EMAIL){
+    document.getElementById('access-denied').style.display='block';
+    return;
+  }
+  document.getElementById('admin-content').style.display='block';
+  renderAll();
+}
+
+function renderAll(){
+  const reports=getReports();
+  const users=getUsers();
+  const ideas=getIdeas();
+
+  // Stats
+  document.getElementById('stat-reports').textContent=reports.length;
+  document.getElementById('stat-users').textContent=users.length;
+  document.getElementById('stat-ideas').textContent=ideas.filter(i=>i.isPublic&&!i.isArchived).length;
+  document.getElementById('sum-pending').textContent=reports.filter(r=>!r.status||r.status==='Pending').length;
+  document.getElementById('sum-total').textContent=reports.length;
+  document.getElementById('sum-users').textContent=users.length;
+  document.getElementById('sum-ideas').textContent=ideas.filter(i=>!i.isArchived).length;
+
+  renderReports(reports,users,ideas);
+  renderUsers(users,ideas);
+  renderIdeas(ideas,users);
+}
+
+/* ─── TABS ─── */
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+/* ─── REPORTS TABLE ─── */
+function renderReports(reports,users,ideas){
+  const tbody=document.getElementById('reports-tbody');
+  if(!reports.length){tbody.innerHTML=`<tr><td colspan="8" class="empty-state">No abuse reports yet.</td></tr>`;return;}
+
+  const sorted=[...reports].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  tbody.innerHTML=sorted.map(r=>{
+    const reporter=users.find(u=>u.id===r.reporterId);
+    const status=r.status||'Pending';
+    // Determine item type
+    let itemType='unknown', typeClass='';
+    if(r.ideaId&&r.commentId)    {itemType='comment';typeClass='type-comment';}
+    else if(r.ideaId)            {itemType='idea';typeClass='type-idea';}
+    else if(r.listingId)         {itemType='listing';typeClass='type-listing';}
+    const itemId=r.ideaId||r.listingId||'—';
+    return `<tr>
+      <td style="font-family:monospace;font-size:10px;color:var(--text-light);">${r.id.slice(-6)}</td>
+      <td><span class="type-tag ${typeClass}">${itemType}</span></td>
+      <td>${escH(r.reason||'—')}</td>
+      <td>${escH(reporter?.name||r.reporterId?.slice(-6)||'—')}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escH(r.notes||'')}">${escH(r.notes||'—')}</td>
+      <td style="white-space:nowrap;">${timeAgo(r.createdAt)}</td>
+      <td><span class="status-pill ${status.toLowerCase()}">${status}</span></td>
+      <td>
+        <div class="action-btns">
+          ${r.ideaId?`<button class="btn" onclick="viewItem('${r.ideaId}','${r.commentId||''}')">View</button>`:''}
+          ${status==='Pending'?`
+            <button class="btn btn-accent" onclick="resolveReport('${r.id}','Dismissed')">Dismiss</button>
+            ${r.ideaId?`<button class="btn btn-danger" onclick="deleteReportedItem('${r.id}','${r.ideaId}','${r.commentId||''}')">Delete</button>`:''}
+            ${r.listingId?`<button class="btn btn-danger" onclick="deleteListing('${r.id}','${r.listingId}')">Delete</button>`:''}
+          `:`<span style="font-size:11px;color:var(--text-light);">${status}</span>`}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function resolveReport(reportId, status){
+  const reports=getReports();
+  const r=reports.find(r=>r.id===reportId);
+  if(r)r.status=status;
+  saveReports(reports);renderAll();
+}
+
+function viewItem(ideaId, commentId){
+  const ideas=getIdeas();
+  const idea=ideas.find(i=>i.id===ideaId);
+  if(!idea){alert('Item not found — may have been deleted.');return;}
+  if(commentId){
+    const c=(idea.comments||[]).find(c=>c.id===commentId);
+    openModal(`<div class="modal-title">Comment</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">On idea: <em>${escH(idea.title)}</em></p>
+      <pre>${escH(c?c.text:'Comment not found')}</pre>
+      <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+  } else {
+    openModal(`<div class="modal-title">${escH(idea.title)}</div>
+      <pre>${escH(idea.description)}</pre>
+      <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+  }
+}
+
+function deleteReportedItem(reportId, ideaId, commentId){
+  if(!confirm('Permanently delete this content? This cannot be undone.'))return;
+  const ideas=getIdeas();
+  if(commentId){
+    const idea=ideas.find(i=>i.id===ideaId);
+    if(idea) idea.comments=(idea.comments||[]).filter(c=>c.id!==commentId);
+  } else {
+    const idx=ideas.findIndex(i=>i.id===ideaId);
+    if(idx>=0) ideas.splice(idx,1);
+  }
+  saveIdeas(ideas);
+  resolveReport(reportId,'Resolved');
+}
+
+function deleteListing(reportId, listingId){
+  if(!confirm('Permanently delete this listing?'))return;
+  const listings=getListings();
+  saveListings(listings.filter(l=>l.id!==listingId));
+  resolveReport(reportId,'Resolved');
+}
+
+/* ─── USERS TABLE ─── */
+function renderUsers(users,ideas){
+  const tbody=document.getElementById('users-tbody');
+  tbody.innerHTML=users.map(u=>{
+    const userIdeas=ideas.filter(i=>i.userId===u.id&&!i.isArchived).length;
+    const conns=(u.people||[]).filter(p=>p.connectionStatus==='accepted').length;
+    const goals=(u.goals||[]).filter(g=>!g.isArchived).length;
+    const joined=u.id ? new Date(parseInt(u.id.slice(-8),36)).toLocaleDateString() : '—';
+    return `<tr>
+      <td style="font-weight:600;">${escH(u.name)}</td>
+      <td>${escH(u.email)}</td>
+      <td style="color:var(--text-light);font-size:11px;">${joined}</td>
+      <td>${goals}</td>
+      <td>${userIdeas}</td>
+      <td>${conns}</td>
+      <td>
+        <div class="action-btns">
+          <a href="transcript.html?userId=${u.id}" class="btn">Transcript</a>
+          <button class="btn btn-danger" onclick="wipeUser('${u.id}','${escH(u.name)}')">Wipe Data</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="empty-state">No users.</td></tr>`;
+}
+
+function wipeUser(userId, name){
+  if(!confirm(`Wipe ALL data for "${name}"? Their account will be deleted permanently.`))return;
+  saveUsers(getUsers().filter(u=>u.id!==userId));
+  // Remove their ideas
+  saveIdeas(getIdeas().filter(i=>i.userId!==userId));
+  // Remove their listings
+  saveListings(getListings().filter(l=>l.userId!==userId));
+  renderAll();
+  alert(`User "${name}" has been removed.`);
+}
+
+/* ─── IDEAS TABLE ─── */
+function renderIdeas(ideas,users){
+  const tbody=document.getElementById('ideas-tbody');
+  const sorted=[...ideas].filter(i=>!i.isArchived).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  tbody.innerHTML=sorted.map(idea=>{
+    const author=users.find(u=>u.id===idea.userId);
+    const net=idea.upvotes-idea.downvotes;
+    return `<tr>
+      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escH(idea.title)}</td>
+      <td>${escH(author?.name||'Unknown')}</td>
+      <td>${escH(idea.category)}</td>
+      <td style="color:${net>=0?'var(--accent)':'var(--danger)'};">▲${idea.upvotes} ▼${idea.downvotes}</td>
+      <td>${(idea.comments||[]).length}</td>
+      <td style="white-space:nowrap;font-size:11px;color:var(--text-light);">${timeAgo(idea.createdAt)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn" onclick="viewIdeaDetail('${idea.id}')">View</button>
+          <button class="btn btn-danger" onclick="adminDeleteIdea('${idea.id}','${escH(idea.title)}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="empty-state">No ideas.</td></tr>`;
+}
+
+function viewIdeaDetail(ideaId){
+  const idea=getIdeas().find(i=>i.id===ideaId);
+  if(!idea)return;
+  openModal(`<div class="modal-title">${escH(idea.title)}</div>
+    <p style="font-size:11px;color:var(--text-light);margin-bottom:8px;">${escH(idea.category)} · ${idea.isPublic?'Public':'🔒 Private'}</p>
+    <pre>${escH(idea.description)}</pre>
+    ${idea.comments?.length?`<p style="margin-top:10px;font-size:12px;font-weight:600;color:var(--text-muted);">${idea.comments.length} comments</p>`:''}
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="closeModal();adminDeleteIdea('${idea.id}','${escH(idea.title)}')">Delete Idea</button>
+      <button class="btn btn-accent" onclick="closeModal()">Close</button>
+    </div>`);
+}
+
+function adminDeleteIdea(ideaId, title){
+  if(!confirm(`Delete idea "${title}"? All comments will also be removed. Cannot be undone.`))return;
+  saveIdeas(getIdeas().filter(i=>i.id!==ideaId));
+  closeModal();renderAll();
+}
+
+/* ─── MODAL ─── */
+function openModal(html){
+  document.getElementById('modal-container').innerHTML=
+    `<div class="modal-overlay" onclick="handleOverlayClick(event)"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+function handleOverlayClick(e){if(e.target.classList.contains('modal-overlay'))closeModal();}
+
+window.addEventListener('DOMContentLoaded',initPage);
+</script>
+</body>
+</html>

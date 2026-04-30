@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Idea Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f0ede8; --surface:#faf9f7; --surface2:#f3f0eb; --border:#e2ddd6;
+    --text:#1a1714; --text-muted:#7a7470; --text-light:#a09a94;
+    --accent:#2d5016; --accent-light:#4a7a28; --accent-bg:#e8f0e0;
+    --danger:#8b2020; --danger-bg:#f5e0e0; --gold:#a07830;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
+    --shadow:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.05);
+    --radius:10px; --radius-sm:6px;
+    --font-display:'Playfair Display',Georgia,serif;
+    --font-body:'DM Sans',system-ui,sans-serif;
+    --transition:0.18s ease;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+
+  /* HEADER */
+  #app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+  .header-title{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--accent);letter-spacing:-0.5px;white-space:nowrap;}
+  .header-welcome{font-size:13px;color:var(--text-muted);}
+  .header-welcome span{color:var(--text);font-weight:500;}
+  .header-spacer{flex:1;}
+  .view-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px;gap:2px;}
+  .view-toggle label{padding:4px 12px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-radius:16px;transition:all var(--transition);user-select:none;}
+  .view-toggle input[type="radio"]{display:none;}
+  .view-toggle input[type="radio"]:checked+label{background:var(--accent);color:#fff;}
+  .header-links{display:flex;gap:8px;}
+  .header-link{font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;padding:4px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);transition:all var(--transition);text-decoration:none;}
+  .header-link:hover{background:var(--surface2);color:var(--text);}
+
+  /* LAYOUT */
+  #main-layout{display:grid;grid-template-columns:25% 50% 25%;gap:16px;padding:16px;max-width:1600px;margin:0 auto;align-items:start;}
+  .column{display:flex;flex-direction:column;gap:12px;}
+
+  /* PANELS */
+  .panel{background:var(--surface);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);border:1px solid var(--border);}
+  .panel-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);margin-bottom:10px;letter-spacing:-0.2px;display:flex;align-items:center;gap:6px;}
+  .panel-title-gear{cursor:pointer;font-size:13px;opacity:0.5;transition:opacity var(--transition);}
+  .panel-title-gear:hover{opacity:1;}
+  .panel-top-btns{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
+  .btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 9px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--transition);font-family:var(--font-body);white-space:nowrap;}
+  .btn:hover{background:var(--border);}
+  .btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn-accent:hover{background:var(--accent-light);border-color:var(--accent-light);}
+  .btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;}
+  .btn-danger:hover{background:#eebbbb;}
+  .btn-sm{padding:2px 7px;font-size:11px;}
+  .panel-inner{display:flex;gap:10px;}
+  .panel-filters{width:30%;min-width:70px;flex-shrink:0;}
+  .panel-content{flex:1;min-width:0;}
+  .filter-label{font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+  .filter-item{font-size:12px;color:var(--text-muted);padding:3px 6px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition);margin-bottom:2px;border:1px solid transparent;user-select:none;}
+  .filter-item:hover{background:var(--surface2);color:var(--text);}
+  .filter-item.active{background:var(--accent-bg);color:var(--accent);border-color:#c0d8a0;font-weight:500;}
+  .filter-item.add-new{color:var(--text-light);font-style:italic;}
+  .filter-item.add-new:hover{color:var(--accent);background:var(--accent-bg);}
+  .list-item{font-size:13px;padding:4px 6px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--transition);display:flex;align-items:center;gap:6px;border:1px solid transparent;margin-bottom:2px;}
+  .list-item:hover{background:var(--surface2);}
+  .list-item.selected{background:var(--accent-bg);border-color:#c0d8a0;}
+  .list-item-badge{font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);flex-shrink:0;}
+  .list-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .list-item-name a{color:var(--accent);text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color var(--transition);}
+  .list-item-name a:hover{text-decoration-color:var(--accent);}
+  .view-all-link{font-size:11px;color:var(--accent-light);cursor:pointer;padding:3px 6px;margin-top:4px;display:inline-block;font-weight:500;}
+  .view-all-link:hover{text-decoration:underline;}
+  .panel-bottom-btns{display:flex;gap:5px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center;}
+  .schedule-item{display:flex;gap:8px;align-items:flex-start;padding:4px 6px;border-radius:var(--radius-sm);margin-bottom:3px;font-size:12px;transition:background var(--transition);}
+  .schedule-item:hover{background:var(--surface2);}
+  .schedule-date{font-size:11px;color:var(--text-light);font-weight:500;min-width:62px;flex-shrink:0;padding-top:1px;}
+  .schedule-title{color:var(--text);}
+  .below-schedule-nav{display:flex;gap:6px;padding:10px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+
+  /* TODAY PANEL */
+  .today-row{padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);margin-bottom:8px;}
+  .today-row:last-child{margin-bottom:0;}
+  .today-row-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-light);margin-bottom:4px;}
+  .today-row-content{font-size:13px;color:var(--text);line-height:1.5;}
+  .today-row-meta{font-size:11px;color:var(--text-light);margin-top:3px;font-style:italic;}
+  .today-goal-link{font-size:11px;color:var(--accent-light);cursor:pointer;margin-top:4px;display:inline-block;font-weight:500;}
+  .today-goal-link:hover{text-decoration:underline;}
+
+  /* AI ASSISTANT */
+  #ai-chat-messages{height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;scroll-behavior:smooth;}
+  .chat-msg{max-width:88%;padding:7px 10px;border-radius:8px;font-size:12px;line-height:1.5;}
+  .chat-msg.user{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:2px;}
+  .chat-msg.assistant{background:var(--surface);color:var(--text);align-self:flex-start;border:1px solid var(--border);border-bottom-left-radius:2px;}
+  .chat-msg.assistant .cmd-tag{display:inline-block;font-size:10px;background:var(--accent-bg);color:var(--accent);border:1px solid #c0d8a0;border-radius:3px;padding:1px 5px;margin-right:4px;}
+  .ai-input-row{display:flex;gap:6px;}
+  .ai-input-row input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-body);outline:none;background:var(--surface);}
+  .ai-input-row input:focus{border-color:var(--accent);}
+
+  /* RIGHT COLUMN SIMPLE ITEMS */
+  .simple-list-item{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:var(--radius-sm);font-size:12px;border:1px solid transparent;transition:background var(--transition);cursor:pointer;margin-bottom:2px;}
+  .simple-list-item:hover{background:var(--surface2);}
+  .simple-list-item.selected{background:var(--accent-bg);border-color:#c0d8a0;}
+  .simple-list-item .item-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .simple-list-item .item-cat{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);flex-shrink:0;}
+  .simple-list-item .item-link-icon{font-size:10px;color:var(--accent-light);flex-shrink:0;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px;}
+  .modal{background:var(--surface);border-radius:var(--radius);padding:24px;min-width:320px;max-width:500px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);max-height:90vh;overflow-y:auto;}
+  .modal-title{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px;color:var(--text);}
+  .modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+  .form-group{margin-bottom:12px;}
+  .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;}
+  .form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);color:var(--text);background:var(--surface);transition:border-color var(--transition);outline:none;}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+  .form-textarea{resize:vertical;min-height:80px;}
+  .form-checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-top:4px;cursor:pointer;}
+
+  /* AUTH */
+  #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
+  .auth-card{background:var(--surface);border-radius:var(--radius);padding:36px 32px;width:100%;max-width:380px;box-shadow:var(--shadow);border:1px solid var(--border);}
+  .auth-title{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--accent);text-align:center;margin-bottom:4px;}
+  .auth-subtitle{text-align:center;color:var(--text-light);font-size:13px;margin-bottom:24px;}
+  .auth-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:var(--radius-sm);padding:3px;margin-bottom:20px;}
+  .auth-tab{flex:1;text-align:center;padding:7px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all var(--transition);}
+  .auth-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm);}
+  .auth-error{background:var(--danger-bg);color:var(--danger);padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:12px;display:none;}
+
+  /* UTILITIES */
+  .text-muted{color:var(--text-muted);} .text-light{color:var(--text-light);} .text-small{font-size:11px;}
+  .divider{border:none;border-top:1px solid var(--border);margin:8px 0;}
+  .private-badge{font-size:9px;padding:1px 4px;border-radius:3px;background:#f0e0f0;color:#7040a0;border:1px solid #d8b8e8;font-weight:600;flex-shrink:0;}
+  .fav-star{cursor:pointer;font-size:13px;flex-shrink:0;}
+  .fav-star:hover{transform:scale(1.2);}
+  .empty-state{color:var(--text-light);font-size:12px;font-style:italic;padding:8px 6px;text-align:center;}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-weight:500;margin:1px;}
+  .manage-list-item{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+  .manage-list-item:last-child{border-bottom:none;}
+  .manage-list-item .name{flex:1;font-weight:500;}
+  .status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .status-dot.connected{background:var(--accent-light);} .status-dot.invited{background:var(--gold);} .status-dot.none{background:var(--border);}
+
+  /* PROJECT DISPLAY PANEL */
+  #project-display-panel{min-height:300px;}
+  .pd-controls{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .pd-view-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+  .pd-view-btn{padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text-muted);font-family:var(--font-body);transition:all var(--transition);}
+  .pd-view-btn:hover{background:var(--border);color:var(--text);}
+  .pd-view-btn.active{background:var(--accent);color:#fff;}
+  .pd-mode-toggle{display:flex;gap:4px;margin-left:auto;}
+  .pd-mode-btn{padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text-muted);font-family:var(--font-body);transition:all var(--transition);}
+  .pd-mode-btn.active{background:var(--accent-bg);color:var(--accent);border-color:#c0d8a0;}
+  .pd-grid{display:grid;gap:10px;}
+  .pd-grid.view-1{grid-template-columns:1fr;}
+  .pd-grid.view-3{grid-template-columns:repeat(3,1fr);}
+  .pd-grid.view-6{grid-template-columns:repeat(3,1fr);}
+  .pd-grid.view-9{grid-template-columns:repeat(3,1fr);}
+  .pd-square{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;display:flex;flex-direction:column;gap:6px;min-height:160px;position:relative;}
+  .pd-square.view-1{min-height:260px;}
+  .pd-square-header{display:flex;align-items:center;gap:6px;}
+  .pd-square-name{font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--accent);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pd-edit-btn{font-size:10px;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text-muted);cursor:pointer;font-family:var(--font-body);flex-shrink:0;transition:all var(--transition);}
+  .pd-edit-btn:hover{background:var(--border);color:var(--text);}
+  .pd-cat-badge{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--surface);color:var(--text-muted);border:1px solid var(--border);font-weight:600;flex-shrink:0;}
+  .pd-notes{flex:1;font-size:11px;color:var(--text);line-height:1.65;overflow:hidden;}
+  .pd-notes-line{min-height:1.65em;padding:1px 0;border-bottom:1px solid transparent;}
+  .pd-notes-line:hover{border-bottom-color:var(--border);}
+  .pd-notes-line.empty{color:var(--text-light);opacity:0.4;}
+  .pd-goal-link{font-size:10px;color:var(--accent-light);cursor:pointer;font-weight:500;padding-top:4px;border-top:1px solid var(--border);margin-top:2px;}
+  .pd-goal-link:hover{text-decoration:underline;}
+  .pd-goal-link.disabled{color:var(--text-light);cursor:default;}
+  .pd-goal-link.disabled:hover{text-decoration:none;}
+  .pd-map-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;background:var(--surface2);border:1.5px dashed var(--border);border-radius:var(--radius-sm);color:var(--text-light);text-align:center;padding:24px;}
+  .pd-map-placeholder h3{font-family:var(--font-display);font-size:18px;color:var(--text-muted);margin-bottom:8px;}
+  .pd-map-placeholder p{font-size:13px;max-width:280px;line-height:1.5;}
+  /* Notes editor modal */
+  .notes-toolbar{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
+  .notes-toolbar button{padding:3px 8px;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--surface2);cursor:pointer;font-family:var(--font-body);font-weight:600;}
+  .notes-toolbar button:hover{background:var(--border);}
+  #notes-editor{min-height:160px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:12px;font-family:var(--font-body);line-height:1.7;outline:none;background:var(--surface);overflow-y:auto;}
+  #notes-editor:focus{border-color:var(--accent);}
+  #notes-editor ul{padding-left:18px;}
+
+  #right-bottom-nav{flex-wrap:wrap;}
+  #right-bottom-nav .btn{font-size:11px;}
+
+  @media(max-width:768px){
+    #main-layout{grid-template-columns:1fr;padding:10px;}
+    .panel-inner{flex-direction:column;}
+    .panel-filters{width:100%;}
+    #app-header{flex-wrap:wrap;gap:8px;padding:8px 12px;}
+    .header-title{font-size:18px;}
+    .header-welcome{font-size:12px;}
+    .view-toggle label{padding:4px 8px;font-size:11px;}
+    .header-links{flex-wrap:wrap;gap:4px;}
+    .header-link{font-size:11px;padding:3px 8px;}
+    /* Project display collapses gracefully */
+    .pd-grid.view-3,.pd-grid.view-6,.pd-grid.view-9{grid-template-columns:1fr 1fr;}
+    .pd-controls{gap:4px;}
+    /* Modals full-width on mobile */
+    .modal{min-width:unset;width:100%;max-width:100%;padding:16px;border-radius:var(--radius) var(--radius) 0 0;}
+    .modal-overlay{align-items:flex-end;padding:0;}
+    /* Touch-friendly input sizes */
+    .form-input,.form-select,.form-textarea,.btn{font-size:16px !important;}
+    .btn-sm{font-size:13px !important;}
+    .below-schedule-nav{flex-wrap:wrap;}
+    #right-bottom-nav{flex-wrap:wrap;}
+  }
+  @media(max-width:480px){
+    .pd-grid.view-3,.pd-grid.view-6,.pd-grid.view-9{grid-template-columns:1fr;}
+    .pd-mode-toggle{flex-direction:column;gap:2px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-title">Idea Index</div>
+    <div class="auth-subtitle">Your personal knowledge operating system</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')">Log In</div>
+      <div class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <div id="login-form">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="login-email" type="email" placeholder="you@email.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="login-password" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-accent" style="width:100%;padding:10px;" onclick="handleLogin()">Log In</button>
+    </div>
+    <div id="signup-form" style="display:none;">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="signup-name" type="text" placeholder="Your name"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="signup-email" type="email" placeholder="you@email.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="signup-password" type="password" placeholder="Min 6 characters"></div>
+      <button class="btn btn-accent" style="width:100%;padding:10px;" onclick="handleSignup()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+  <header id="app-header">
+    <div class="header-title">Idea Index</div>
+    <div class="header-welcome">Welcome, <span id="header-user-name">—</span></div>
+    <div class="header-spacer"></div>
+    <div class="view-toggle">
+      <input type="radio" name="view-mode" id="view-public" value="public" checked onchange="handleViewToggle()">
+      <label for="view-public">Public</label>
+      <input type="radio" name="view-mode" id="view-private" value="private" onchange="handleViewToggle()">
+      <label for="view-private">Private</label>
+    </div>
+    <div class="header-links">
+      <a class="header-link" onclick="window.location.href='ideas.html'">Ideas ↗</a>
+      <a class="header-link" onclick="openModal('account-modal')">Account</a>
+      <a class="header-link" onclick="openModal('settings-modal')">Settings</a>
+      <a class="header-link" onclick="handleLogout()">Log out</a>
+    </div>
+  </header>
+
+  <div id="main-layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="column" id="left-column">
+
+      <!-- PEOPLE -->
+      <div class="panel" id="people-panel">
+        <div class="panel-title">People</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddPersonModal()">+ Add</button>
+          <button class="btn" onclick="openInviteModal()">Invite</button>
+          <button class="btn" onclick="openManageConnectionsModal()">Connections</button>
+        </div>
+        <div class="panel-inner">
+          <div class="panel-filters" id="people-filters"></div>
+          <div class="panel-content" id="people-list"></div>
+        </div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger" onclick="archiveSelectedPerson()">Archive</button>
+          <span class="view-all-link" onclick="openViewAllPeople()">View all</span>
+        </div>
+      </div>
+
+      <!-- ACTIVE PROJECTS -->
+      <div class="panel" id="projects-panel" style="min-height:260px;">
+        <div class="panel-title">Active Projects</div>
+        <div class="panel-top-btns">
+          <button class="btn" onclick="setProjectSort('recent')" id="proj-sort-recent">Recent</button>
+          <button class="btn" onclick="setProjectSort('favorites')" id="proj-sort-fav">Favorites</button>
+          <button class="btn btn-accent" onclick="openAddProjectModal()">+ Add</button>
+          <button class="btn" onclick="openManageProjectsModal()">Manage</button>
+        </div>
+        <div class="panel-inner">
+          <div class="panel-filters" id="projects-filters"></div>
+          <div class="panel-content" id="projects-list"></div>
+        </div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger" onclick="archiveSelectedProject()">Archive</button>
+          <span class="view-all-link" onclick="openViewAllProjects()">View all</span>
+        </div>
+      </div>
+
+      <!-- UPCOMING SCHEDULE -->
+      <div class="panel" id="schedule-panel">
+        <div class="panel-title">Upcoming Schedule</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddEventModal()">+ Add</button>
+          <button class="btn" onclick="openAddRecurringEventModal()">Recurring</button>
+          <button class="btn" onclick="openManageEventsModal()">Manage</button>
+        </div>
+        <div class="panel-inner">
+          <div class="panel-filters" id="schedule-filters"></div>
+          <div class="panel-content" id="schedule-list"></div>
+        </div>
+        <div class="panel-bottom-btns">
+          <span class="view-all-link" onclick="openViewAllEvents()">View all</span>
+        </div>
+      </div>
+
+      <div class="below-schedule-nav">
+        <button class="btn" onclick="openJournalModal()">Journal</button>
+        <button class="btn" onclick="openDiaryModal()">Diary</button>
+        <button class="btn btn-accent" onclick="window.location.href='ideas.html'">Ideas ↗</button>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- CENTER COLUMN -->
+    <div class="column" id="center-column">
+
+      <!-- TODAY PANEL -->
+      <div class="panel" id="today-panel">
+        <div class="panel-title">
+          Today
+          <span class="panel-title-gear" onclick="openTodaySettingsModal()" title="Configure Today panel">⚙️</span>
+        </div>
+        <div id="today-gratitude-row" class="today-row"></div>
+        <div id="today-goal-row" class="today-row"></div>
+        <div id="today-quote-row" class="today-row"></div>
+      </div>
+
+      <!-- AI ASSISTANT -->
+      <div class="panel" id="ai-panel">
+        <div class="panel-title">
+          AI Agent
+          <span style="font-size:10px;font-weight:400;color:var(--accent-light);margin-left:4px;">✨ free · no key needed</span>
+          <button class="btn" onclick="clearAIChat()" title="Clear chat" style="margin-left:auto;font-size:10px;padding:2px 7px;">✕ Clear</button>
+        </div>
+        <div id="ai-chat-messages"></div>
+        <div class="ai-input-row">
+          <input type="text" id="ai-input"
+            placeholder="Ask anything or give a command — 'Write a book report', 'What books about space?'"
+            onkeydown="if(event.key==='Enter')sendAIMessage()">
+          <button class="btn btn-accent" id="ai-send-btn" onclick="sendAIMessage()">Send</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:5px;text-align:center;">
+          Powered by Pollinations AI · free · no account needed · reads all your data
+        </div>
+      </div>
+
+      <!-- PROJECT DISPLAY -->
+      <div class="panel" id="project-display-panel">
+        <div class="panel-title">Project Display</div>
+        <div class="pd-controls">
+          <div class="pd-view-toggle">
+            <button class="pd-view-btn" id="pd-btn-1" onclick="setPDView(1)">1</button>
+            <button class="pd-view-btn" id="pd-btn-3" onclick="setPDView(3)">3</button>
+            <button class="pd-view-btn" id="pd-btn-6" onclick="setPDView(6)">6</button>
+            <button class="pd-view-btn active" id="pd-btn-9" onclick="setPDView(9)">9</button>
+          </div>
+          <div class="pd-mode-toggle">
+            <button class="pd-mode-btn active" id="pd-mode-display" onclick="setPDMode('display')">Project Display</button>
+            <button class="pd-mode-btn" id="pd-mode-map" onclick="setPDMode('map')">Map View</button>
+          </div>
+        </div>
+        <div id="pd-content"></div>
+      </div>
+
+    </div><!-- /center -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="column" id="right-column">
+
+      <!-- GOALS -->
+      <div class="panel" id="goals-panel">
+        <div class="panel-title">Goals</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddGoalModal()">+ Add</button>
+          <button class="btn" onclick="openManageGoalsModal()">Manage</button>
+        </div>
+        <div id="goals-list"></div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedGoal()">Archive</button>
+          <span class="view-all-link" onclick="toggleGoalsViewAll()">View all</span>
+        </div>
+      </div>
+
+      <!-- FITNESS -->
+      <div class="panel" id="fitness-panel">
+        <div class="panel-title">Fitness</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddSimpleItemModal('fitness')">+ Add</button>
+          <button class="btn" onclick="writeReportFor('fitness')">Write report</button>
+        </div>
+        <div id="fitness-list"></div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedSimpleItem('fitness')">Archive</button>
+          <span class="view-all-link" onclick="toggleSimpleViewAll('fitness')">View all</span>
+        </div>
+      </div>
+
+      <!-- READING -->
+      <div class="panel" id="reading-panel">
+        <div class="panel-title">Reading</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddBookModal()">+ Add</button>
+          <button class="btn" onclick="writeReportFor('reading')">Write report</button>
+        </div>
+        <div id="reading-list"></div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedSimpleItem('reading')">Archive</button>
+          <span class="view-all-link" onclick="toggleSimpleViewAll('reading')">View all</span>
+        </div>
+      </div>
+
+      <!-- MOVIES -->
+      <div class="panel" id="movies-panel">
+        <div class="panel-title">Movies</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddMovieModal()">+ Add</button>
+          <button class="btn" onclick="writeReportFor('movies')">Write report</button>
+        </div>
+        <div id="movies-list"></div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedSimpleItem('movies')">Archive</button>
+          <span class="view-all-link" onclick="toggleSimpleViewAll('movies')">View all</span>
+        </div>
+      </div>
+
+      <!-- EXPERIENCES -->
+      <div class="panel" id="experiences-panel">
+        <div class="panel-title">Experiences</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddExperienceModal()">+ Add</button>
+          <button class="btn" onclick="writeReportFor('experiences')">Write report</button>
+        </div>
+        <div id="experiences-list"></div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedSimpleItem('experiences')">Archive</button>
+          <span class="view-all-link" onclick="toggleSimpleViewAll('experiences')">View all</span>
+        </div>
+      </div>
+
+      <!-- DIET -->
+      <div class="panel" id="diet-panel">
+        <div class="panel-title">Diet</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddSimpleItemModal('diet')">+ Add</button>
+          <button class="btn" onclick="writeReportFor('diet')">Write report</button>
+        </div>
+        <div id="diet-list"></div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedSimpleItem('diet')">Archive</button>
+          <span class="view-all-link" onclick="toggleSimpleViewAll('diet')">View all</span>
+        </div>
+      </div>
+
+      <!-- LIFE MANAGEMENT -->
+      <div class="panel" id="lifemgmt-panel" style="min-height:260px;">
+        <div class="panel-title">Life Management</div>
+        <div class="panel-top-btns">
+          <button class="btn btn-accent" onclick="openAddLifeItemModal()">+ Add</button>
+          <button class="btn" onclick="openManageLifeItemsModal()">Manage</button>
+        </div>
+        <div class="panel-inner">
+          <div class="panel-filters" id="lifemgmt-filters"></div>
+          <div class="panel-content" id="lifemgmt-list"></div>
+        </div>
+        <div class="panel-bottom-btns">
+          <button class="btn btn-danger btn-sm" onclick="archiveSelectedLifeItem()">Archive</button>
+          <span class="view-all-link" onclick="toggleLifeMgmtViewAll()">View all</span>
+        </div>
+      </div>
+
+      <!-- BOTTOM NAV (right column) -->
+      <div class="below-schedule-nav" id="right-bottom-nav">
+        <button class="btn" onclick="window.location.href='transcript.html'">📋 Transcript</button>
+        <button class="btn" onclick="window.location.href='market.html'">🏪 Market</button>
+        <button class="btn" onclick="window.location.href='shared.html'">🤝 Shared</button>
+      </div>
+
+    </div><!-- /right -->
+
+  </div><!-- /main-layout -->
+</div><!-- /app -->
+
+<div id="modal-container"></div>
+
+<script>
+/* =============================================
+   CONSTANTS & GLOBAL STATE
+============================================= */
+const STORAGE_KEY='ideaIndex_users';
+const SESSION_KEY='ideaIndex_session';
+
+let currentUser=null, viewMode='public';
+let selectedPersonId=null, selectedProjectId=null, selectedGoalId=null;
+let selectedSimpleItems={fitness:null,reading:null,movies:null,experiences:null,diet:null};
+let activePeopleFilters=[], activeProjectFilters=[], activeScheduleFilters=[];
+let projectSort='recent';
+let peopleShowAll=false, projectsShowAll=false, eventsShowAll=false, goalsShowAll=false;
+let simpleShowAll={fitness:false,reading:false,movies:false,experiences:false,diet:false};
+let aiChatHistory=[];
+
+let selectedLifeItemId=null, activeLifeFilters=[], lifeMgmtShowAll=false;
+let pdView=9, pdMode='display'; // Project Display state
+const LIFE_MGMT_CATEGORIES=['Shopping','Money','Housing','Jobs','Education','Transportation','Healthcare','Insurance'];
+
+const PEOPLE_CATEGORIES=['Romantic','Friend','Acquaintance','Business','Unsure','Teacher','Family','Mentor'];
+const PROJECT_CATEGORIES=['Sport','Class','Club','Project','Skill','Business','Art','Music'];
+const SCHEDULE_CATEGORIES=['Work','Project','Growth'];
+const GOAL_CATEGORIES=['Fitness','Finance','Project','Skill','Life Management'];
+const PROJECT_ABBR={Sport:'Sport',Class:'Class',Club:'Club',Project:'Proj',Skill:'Skill',Business:'Biz',Art:'Art',Music:'Music'};
+const REPORT_TYPE_MAP={fitness:'Experience Report',reading:'Book Report',movies:'Movie Report',experiences:'Experience Report',diet:'Experience Report'};
+const REPORT_TYPES=['','Book Report','Movie Report','Experience Report'];
+
+/* =============================================
+   GRATITUDE & QUOTES
+============================================= */
+const GRATITUDE=[
+  "I am grateful for my health and the energy it gives me.",
+  "I appreciate the people who support and believe in me.",
+  "I am thankful for the opportunities in front of me.",
+  "I am grateful for the lessons hidden in my challenges.",
+  "I appreciate the beauty in small, everyday moments.",
+  "I am grateful for a safe place to rest and recharge.",
+  "I appreciate the curiosity that drives me to keep learning.",
+  "I am thankful for the friendships that make life richer.",
+  "I am grateful for my ability to adapt and grow.",
+  "I appreciate the quiet mornings that set my intentions.",
+  "I am thankful for the food that nourishes my body.",
+  "I am grateful for the laughter that lightens hard days.",
+  "I appreciate the mentors who share their wisdom freely.",
+  "I am grateful for the courage to try new things.",
+  "I appreciate access to knowledge and the ability to learn.",
+  "I am grateful for the creativity that lives inside me.",
+  "I appreciate every step forward, no matter how small.",
+  "I am thankful for the love I both give and receive.",
+  "I am grateful for the clarity that comes after reflection.",
+  "I appreciate the chance to begin again each morning.",
+  "I am grateful for the work that gives my days meaning.",
+  "I appreciate the moments of stillness in a busy world.",
+  "I am thankful for the strength I discover in difficulty.",
+  "I am grateful for the experiences that have shaped who I am.",
+  "I appreciate the kindness of strangers and friends alike.",
+  "I am grateful for music that moves and grounds me.",
+  "I appreciate nature's reminder that cycles are natural.",
+  "I am thankful for the goals that give me direction.",
+  "I am grateful for rest that restores my mind and body.",
+  "I appreciate that growth is always possible, at any stage."
+];
+
+const QUOTES=[
+  {text:"Imagination is more important than knowledge.",author:"Albert Einstein"},
+  {text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},
+  {text:"Stay hungry, stay foolish.",author:"Steve Jobs"},
+  {text:"The only way to do great work is to love what you do.",author:"Steve Jobs"},
+  {text:"In the middle of every difficulty lies opportunity.",author:"Albert Einstein"},
+  {text:"You will face many defeats in life, but never let yourself be defeated.",author:"Maya Angelou"},
+  {text:"The future belongs to those who believe in the beauty of their dreams.",author:"Eleanor Roosevelt"},
+  {text:"It is not the mountain we conquer, but ourselves.",author:"Edmund Hillary"},
+  {text:"Life is what happens when you're busy making other plans.",author:"John Lennon"},
+  {text:"The greatest glory in living lies not in never falling, but in rising every time we fall.",author:"Nelson Mandela"},
+  {text:"Education is the most powerful weapon which you can use to change the world.",author:"Nelson Mandela"},
+  {text:"It always seems impossible until it's done.",author:"Nelson Mandela"},
+  {text:"The only limits you have are the limits you believe.",author:"Wayne Dyer"},
+  {text:"Do not wait; the time will never be 'just right.'",author:"Napoleon Hill"},
+  {text:"An investment in knowledge pays the best interest.",author:"Benjamin Franklin"},
+  {text:"Tell me and I forget. Teach me and I remember. Involve me and I learn.",author:"Benjamin Franklin"},
+  {text:"The secret of getting ahead is getting started.",author:"Mark Twain"},
+  {text:"It's not how much we give but how much love we put into giving.",author:"Mother Teresa"},
+  {text:"If you want to lift yourself up, lift up someone else.",author:"Booker T. Washington"},
+  {text:"We are what we repeatedly do. Excellence is not an act but a habit.",author:"Aristotle"},
+  {text:"Knowing yourself is the beginning of all wisdom.",author:"Aristotle"},
+  {text:"Happiness depends upon ourselves.",author:"Aristotle"},
+  {text:"The journey of a thousand miles begins with one step.",author:"Lao Tzu"},
+  {text:"He who knows others is wise; he who knows himself is enlightened.",author:"Lao Tzu"},
+  {text:"Simplicity is the ultimate sophistication.",author:"Leonardo da Vinci"},
+  {text:"I have not failed. I've just found 10,000 ways that won't work.",author:"Thomas Edison"},
+  {text:"Our greatest weakness lies in giving up.",author:"Thomas Edison"},
+  {text:"Be yourself; everyone else is already taken.",author:"Oscar Wilde"},
+  {text:"Success is not final, failure is not fatal: it is the courage to continue that counts.",author:"Winston Churchill"},
+  {text:"You miss 100% of the shots you don't take.",author:"Wayne Gretzky"}
+];
+
+/* stable daily index: hash the date string into an array index */
+function dailyIdx(arr,seed){let h=0;for(let i=0;i<seed.length;i++)h=(h*31+seed.charCodeAt(i))%1e9;return Math.abs(h)%arr.length;}
+
+/* =============================================
+   HTML ESCAPE HELPERS
+============================================= */
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* =============================================
+   STORAGE
+============================================= */
+function getUsers(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch{return [];}}
+function saveUsers(u){
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(u));}
+  catch(e){console.error('Storage full or unavailable:',e);alert('Warning: Could not save data. Your storage may be full. Try exporting your data and clearing old images.');}
+}
+function getCurrentUserData(){if(!currentUser)return null;return getUsers().find(u=>u.id===currentUser.id)||null;}
+function updateUserData(fn){const us=getUsers();const i=us.findIndex(u=>u.id===currentUser.id);if(i<0)return;fn(us[i]);saveUsers(us);currentUser=us[i];}
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+
+/* =============================================
+   DEMO DATA
+============================================= */
+function generateDemoData(){
+  const now=new Date(), fmt=d=>d.toISOString(), ad=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+  return {
+    people:[
+      {id:uid(),name:'Alice Chen',categories:['Friend','Business'],isPrivate:false,isArchived:false,connectionStatus:'accepted',email:'alice@example.com'},
+      {id:uid(),name:'Marcus Rivera',categories:['Mentor'],isPrivate:false,isArchived:false,connectionStatus:'invited',email:'marcus@example.com'},
+      {id:uid(),name:'Priya Kapoor',categories:['Romantic'],isPrivate:true,isArchived:false,connectionStatus:'none',email:''},
+    ],
+    activeProjects:[
+      {id:uid(),name:'Marathon Training',category:'Sport',isFavorite:true,isArchived:false,isPrivate:false,notesForDisplayPanel:['Week 4 of 16','Long run: 14 miles Sat'],linkedGoalId:null,createdAt:fmt(ad(now,-5))},
+      {id:uid(),name:'Spanish A2',category:'Class',isFavorite:false,isArchived:false,isPrivate:false,notesForDisplayPanel:['Duolingo 30 min/day'],linkedGoalId:null,createdAt:fmt(ad(now,-10))},
+      {id:uid(),name:'Freelance Studio',category:'Business',isFavorite:true,isArchived:false,isPrivate:true,notesForDisplayPanel:['Invoices due Friday'],linkedGoalId:null,createdAt:fmt(ad(now,-2))},
+    ],
+    scheduleEvents:[
+      {id:uid(),title:'Team standup',category:'Work',date:fmt(ad(now,1)),recurringPattern:'daily',isArchived:false,isPrivate:false},
+      {id:uid(),title:'Spanish class',category:'Project',date:fmt(ad(now,3)),recurringPattern:'weekly',isArchived:false,isPrivate:false},
+      {id:uid(),title:'Book club meeting',category:'Growth',date:fmt(ad(now,6)),recurringPattern:null,isArchived:false,isPrivate:false},
+    ],
+    journals:[{id:uid(),title:'Thoughts on deep work',content:'Spent two uninterrupted hours on the project today. Flow state achieved.',isPublic:true,reportType:'',createdAt:fmt(now)}],
+    diaries:[{id:uid(),title:'Personal reflection',content:'Feeling overwhelmed but optimistic. Taking it one day at a time.',isPublic:false,reportType:'',createdAt:fmt(now)}],
+    goals:[
+      {id:uid(),text:'Run a half marathon by December',category:'Fitness',linkedProjectId:null,order:0,isArchived:false,isPrivate:false,isPrimary:true,timeframe:'monthly'},
+      {id:uid(),text:'Save $500 this month',category:'Finance',linkedProjectId:null,order:1,isArchived:false,isPrivate:true,isPrimary:false,timeframe:'monthly'},
+      {id:uid(),text:'Read 2 books this quarter',category:'Skill',linkedProjectId:null,order:2,isArchived:false,isPrivate:false,isPrimary:false,timeframe:'weekly'},
+    ],
+    fitness:[
+      {id:uid(),name:'Run 3x per week',isArchived:false,isPrivate:false},
+      {id:uid(),name:'Yoga daily (20 min)',isArchived:false,isPrivate:false},
+      {id:uid(),name:'Strength training 2x week',isArchived:false,isPrivate:false},
+    ],
+    reading:[
+      {id:uid(),title:'Atomic Habits',author:'James Clear',isArchived:false,isPrivate:false},
+      {id:uid(),title:'Deep Work',author:'Cal Newport',isArchived:false,isPrivate:false},
+    ],
+    movies:[
+      {id:uid(),title:'Everything Everywhere All at Once',year:'2022',isArchived:false,isPrivate:false},
+      {id:uid(),title:'Oppenheimer',year:'2023',isArchived:false,isPrivate:false},
+    ],
+    experiences:[{id:uid(),title:'Hiked local state park trail',date:'2024-09-15',isArchived:false,isPrivate:false}],
+    diet:[
+      {id:uid(),goal:'Drink 8 glasses of water daily',isArchived:false,isPrivate:false},
+      {id:uid(),goal:'No added sugar during weekdays',isArchived:false,isPrivate:false},
+    ],
+    lifeMgmt:[
+      {id:uid(),activity:'Submit tax return',description:'File federal & state taxes. Gather W-2s and 1099s first.',category:'Money',isArchived:false,isPrivate:false},
+      {id:uid(),activity:'Call landlord about leak',description:'Kitchen faucet dripping — follow up since last week.',category:'Housing',isArchived:false,isPrivate:false},
+      {id:uid(),activity:'Buy birthday gift for mom',description:'She mentioned wanting a good cookbook.',category:'Shopping',isArchived:false,isPrivate:false},
+      {id:uid(),activity:'Schedule annual physical',description:"Haven't been in two years — book with Dr. Kim.",category:'Healthcare',isArchived:false,isPrivate:false},
+    ]
+  };
+}
+
+/* =============================================
+   AUTH
+============================================= */
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='signup')));
+  document.getElementById('login-form').style.display=tab==='login'?'':'none';
+  document.getElementById('signup-form').style.display=tab==='signup'?'':'none';
+  document.getElementById('auth-error').style.display='none';
+}
+function showAuthError(m){const e=document.getElementById('auth-error');e.textContent=m;e.style.display='block';}
+
+function handleLogin(){
+  try {
+    const email=document.getElementById('login-email').value.trim().toLowerCase();
+    const pw=document.getElementById('login-password').value;
+    if(!email||!pw){showAuthError('Please enter email and password.');return;}
+    const u=getUsers().find(u=>u.email===email&&u.password===pw);
+    if(!u){showAuthError('Invalid email or password.');return;}
+    loginUser(u);
+  } catch(e){ showAuthError('Login error: '+e.message); console.error(e); }
+}
+
+function handleSignup(){
+  try {
+    const name=document.getElementById('signup-name').value.trim();
+    const email=document.getElementById('signup-email').value.trim().toLowerCase();
+    const pw=document.getElementById('signup-password').value;
+    if(!name||!email||!pw){showAuthError('Please fill all fields.');return;}
+    if(pw.length<6){showAuthError('Password must be at least 6 characters.');return;}
+    const users=getUsers();
+    if(users.find(u=>u.email===email)){showAuthError('Email already registered.');return;}
+    const demo=generateDemoData();
+    const nu={id:uid(),name,email,password:pw,
+      settings:{defaultView:'public',quoteSources:[],goalTimeframe:'monthly',primaryGoalId:null},
+      connections:[],pendingInvites:[],
+      customPeopleCategories:[],customProjectCategories:[],customScheduleCategories:[],
+      ...demo};
+    users.push(nu);saveUsers(users);loginUser(nu);
+  } catch(e){ showAuthError('Signup error: '+e.message); console.error(e); }
+}
+
+function loginUser(u){currentUser=u;sessionStorage.setItem(SESSION_KEY,u.id);showApp();}
+
+function handleLogout(){
+  currentUser=null;sessionStorage.removeItem(SESSION_KEY);
+  selectedPersonId=selectedProjectId=selectedGoalId=null;
+  activePeopleFilters=[];activeProjectFilters=[];activeScheduleFilters=[];
+  aiChatHistory=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+function tryAutoLogin(){
+  const id=sessionStorage.getItem(SESSION_KEY);if(!id)return false;
+  const u=getUsers().find(u=>u.id===id);if(u){loginUser(u);return true;}return false;
+}
+
+function showApp(){
+  try {
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('header-user-name').textContent=currentUser.name;
+  } catch(e){ console.error('showApp display error:',e); }
+  try { renderAllPanels(); } catch(e){ console.error('renderAllPanels error:',e); }
+  try { initAIChat(); } catch(e){ console.error('initAIChat error:',e); }
+}
+
+/* =============================================
+   VIEW TOGGLE
+============================================= */
+function handleViewToggle(){viewMode=document.querySelector('input[name="view-mode"]:checked').value;renderAllPanels();}
+function isVisible(item){return!(viewMode==='public'&&item.isPrivate);}
+
+/* =============================================
+   RENDER ALL
+============================================= */
+function renderAllPanels(){
+  renderPeoplePanel();renderProjectsPanel();renderSchedulePanel();
+  renderTodayPanel();renderGoalsPanel();
+  ['fitness','reading','movies','experiences','diet'].forEach(renderSimplePanel);
+  renderLifeMgmtPanel();renderProjectDisplay();
+}
+
+/* ============================================================
+   LEFT COLUMN — PEOPLE
+============================================================ */
+function renderPeoplePanel(){
+  const user=getCurrentUserData();if(!user)return;
+  const allCats=[...PEOPLE_CATEGORIES,...(user.customPeopleCategories||[])];
+  const fe=document.getElementById('people-filters');
+  fe.innerHTML='<div class="filter-label">Filter</div>';
+  allCats.forEach(cat=>{const d=document.createElement('div');d.className='filter-item'+(activePeopleFilters.includes(cat)?' active':'');d.textContent=cat;d.onclick=()=>togglePeopleFilter(cat);fe.appendChild(d);});
+  const an=document.createElement('div');an.className='filter-item add-new';an.textContent='+ Add new';an.onclick=addCustomPeopleCategory;fe.appendChild(an);
+
+  let people=(user.people||[]).filter(p=>!p.isArchived&&isVisible(p));
+  if(activePeopleFilters.length)people=people.filter(p=>activePeopleFilters.every(f=>p.categories?.includes(f)));
+  people.sort((a,b)=>a.name.localeCompare(b.name));
+  const le=document.getElementById('people-list');le.innerHTML='';
+  if(!people.length){le.innerHTML='<div class="empty-state">No people match.</div>';return;}
+  const cnt=peopleShowAll?people.length:Math.min(7,people.length);
+  for(let i=0;i<cnt;i++){
+    const p=people[i];const d=document.createElement('div');
+    d.className='list-item'+(selectedPersonId===p.id?' selected':'');
+    d.onclick=()=>{selectedPersonId=selectedPersonId===p.id?null:p.id;renderPeoplePanel();};
+    const nm=p.connectionStatus==='accepted'?`<a href="#" onclick="viewPersonProfile('${p.id}');return false;">${escHtml(p.name)}</a>`:escHtml(p.name);
+    d.innerHTML=`<span class="list-item-name">${nm}</span>${p.isPrivate?'<span class="private-badge">priv</span>':''}${p.connectionStatus==='invited'?'<span class="tag" style="background:#fef3cd;color:#856404;border-color:#ffd966;">invited</span>':''}`;
+    le.appendChild(d);
+  }
+  if(people.length>7&&!peopleShowAll){const l=document.createElement('span');l.className='view-all-link';l.textContent=`View all (${people.length})`;l.onclick=()=>{peopleShowAll=true;renderPeoplePanel();};le.appendChild(l);}
+  if(peopleShowAll&&people.length>7){const l=document.createElement('span');l.className='view-all-link';l.textContent='Show less';l.onclick=()=>{peopleShowAll=false;renderPeoplePanel();};le.appendChild(l);}
+}
+
+function togglePeopleFilter(c){const i=activePeopleFilters.indexOf(c);if(i>=0)activePeopleFilters.splice(i,1);else activePeopleFilters.push(c);peopleShowAll=false;renderPeoplePanel();}
+function addCustomPeopleCategory(){const n=prompt('New category:');if(!n?.trim())return;updateUserData(u=>{if(!u.customPeopleCategories)u.customPeopleCategories=[];if(!u.customPeopleCategories.includes(n.trim()))u.customPeopleCategories.push(n.trim());});renderPeoplePanel();}
+
+function openAddPersonModal(editId=null){
+  const user=getCurrentUserData(),allCats=[...PEOPLE_CATEGORIES,...(user.customPeopleCategories||[])];
+  const ex=editId?user.people.find(p=>p.id===editId):null;
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Person</div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="fp-name" value="${ex?escAttr(ex.name):''}"></div>
+    <div class="form-group"><label class="form-label">Email (optional)</label><input class="form-input" id="fp-email" type="email" value="${ex?escAttr(ex.email||''):''}"></div>
+    <div class="form-group"><label class="form-label">Categories</label>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;" id="fp-cats">
+        ${allCats.map(c=>`<div class="tag" style="cursor:pointer;${ex&&ex.categories.includes(c)?'background:var(--accent-bg);color:var(--accent);border-color:#c0d8a0;':''}" onclick="toggleFormTag(this)" data-cat="${c}" data-active="${ex&&ex.categories.includes(c)?'true':'false'}">${c}</div>`).join('')}
+      </div></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="fp-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="savePerson('${editId||''}')">Save</button></div>`);
+}
+
+function toggleFormTag(el){const a=el.dataset.active==='true';el.dataset.active=a?'false':'true';if(!a){el.style.background='var(--accent-bg)';el.style.color='var(--accent)';el.style.borderColor='#c0d8a0';}else{el.style.background='';el.style.color='';el.style.borderColor='';}}
+function getSelectedTags(cid){return Array.from(document.querySelectorAll(`#${cid} [data-cat]`)).filter(el=>el.dataset.active==='true').map(el=>el.dataset.cat);}
+
+function savePerson(editId){
+  const name=document.getElementById('fp-name').value.trim();if(!name){alert('Name required.');return;}
+  const email=document.getElementById('fp-email').value.trim(),cats=getSelectedTags('fp-cats'),isPrivate=document.getElementById('fp-private').checked;
+  updateUserData(u=>{if(editId){const p=u.people.find(p=>p.id===editId);if(p){p.name=name;p.email=email;p.categories=cats;p.isPrivate=isPrivate;}}else u.people.push({id:uid(),name,email,categories:cats,isPrivate,isArchived:false,connectionStatus:'none'});});
+  closeModal();renderPeoplePanel();
+}
+
+function archiveSelectedPerson(){if(!selectedPersonId){alert('Select a person first.');return;}if(!confirm('Archive?'))return;updateUserData(u=>{const p=u.people.find(p=>p.id===selectedPersonId);if(p)p.isArchived=true;});selectedPersonId=null;renderPeoplePanel();}
+function openViewAllPeople(){peopleShowAll=true;renderPeoplePanel();}
+
+function openInviteModal(){
+  openModal(null,`<div class="modal-title">Invite Someone</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">When accepted, they appear as a connected contact.</p>
+    <div class="form-group"><label class="form-label">Their name</label><input class="form-input" id="inv-name"></div>
+    <div class="form-group"><label class="form-label">Their email</label><input class="form-input" id="inv-email" type="email"></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="sendInvite()">Send Invite</button></div>`);
+}
+
+function sendInvite(){
+  const name=document.getElementById('inv-name').value.trim(),email=document.getElementById('inv-email').value.trim();
+  if(!name||!email){alert('Fill all fields.');return;}
+  updateUserData(u=>{if(!u.pendingInvites)u.pendingInvites=[];u.pendingInvites.push({name,email,sentAt:new Date().toISOString()});if(!u.people.find(p=>p.email===email))u.people.push({id:uid(),name,email,categories:[],isPrivate:false,isArchived:false,connectionStatus:'invited'});});
+  window.location.href=`mailto:${email}?subject=Join me on Idea Index&body=Hi ${name}, I'd like to connect with you on Idea Index!`;
+  closeModal();renderPeoplePanel();
+}
+
+function openManageConnectionsModal(){
+  const user=getCurrentUserData(),pending=user.pendingInvites||[];
+  const ph=pending.length?pending.map(i=>`<div class="manage-list-item"><div class="status-dot invited"></div><div class="name">${escHtml(i.name)}</div><span class="text-light text-small">${escHtml(i.email)}</span><button class="btn btn-sm" onclick="simulateAccept('${i.email}')">Simulate Accept</button></div>`).join(''):'<div class="empty-state">No pending invites.</div>';
+  const connected=(user.people||[]).filter(p=>p.connectionStatus==='accepted');
+  const ch=connected.length?connected.map(p=>`<div class="manage-list-item"><div class="status-dot connected"></div><div class="name">${escHtml(p.name)}</div></div>`).join(''):'<div class="empty-state">No connections yet.</div>';
+  openModal(null,`<div class="modal-title">Manage Connections</div><div style="margin-bottom:12px;"><div class="form-label" style="margin-bottom:6px;">Pending</div>${ph}</div><div><div class="form-label" style="margin-bottom:6px;">Connected</div>${ch}</div><div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`);
+}
+
+function simulateAccept(email){updateUserData(u=>{const p=u.people.find(p=>p.email===email);if(p)p.connectionStatus='accepted';u.pendingInvites=(u.pendingInvites||[]).filter(i=>i.email!==email);if(!u.connections)u.connections=[];if(!u.connections.includes(email))u.connections.push(email);});closeModal();renderPeoplePanel();openManageConnectionsModal();}
+
+function viewPersonProfile(id){
+  const p=getCurrentUserData().people.find(p=>p.id===id);if(!p)return;
+  openModal(null,`<div class="modal-title">${escHtml(p.name)}'s Profile</div><p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">Connection: <strong>${p.connectionStatus}</strong></p><p style="font-size:13px;margin-bottom:4px;"><strong>Categories:</strong> ${p.categories.join(', ')||'None'}</p><div class="modal-actions"><button class="btn" onclick="window.location.href='transcript.html?userId=${p.id}'">📋 View Transcript</button><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+/* ============================================================
+   LEFT — PROJECTS
+============================================================ */
+function setProjectSort(m){projectSort=m;document.getElementById('proj-sort-recent').className='btn'+(m==='recent'?' btn-accent':'');document.getElementById('proj-sort-fav').className='btn'+(m==='favorites'?' btn-accent':'');renderProjectsPanel();}
+
+function renderProjectsPanel(){
+  const user=getCurrentUserData();if(!user)return;
+  const allCats=[...PROJECT_CATEGORIES,...(user.customProjectCategories||[])];
+  const fe=document.getElementById('projects-filters');fe.innerHTML='<div class="filter-label">Filter</div>';
+  allCats.forEach(c=>{const d=document.createElement('div');d.className='filter-item'+(activeProjectFilters.includes(c)?' active':'');d.textContent=c;d.onclick=()=>toggleProjectFilter(c);fe.appendChild(d);});
+  const an=document.createElement('div');an.className='filter-item add-new';an.textContent='+ Add';an.onclick=addCustomProjectCategory;fe.appendChild(an);
+  let projs=(user.activeProjects||[]).filter(p=>!p.isArchived&&isVisible(p));
+  if(activeProjectFilters.length)projs=projs.filter(p=>activeProjectFilters.includes(p.category));
+  if(projectSort==='favorites')projs=projs.filter(p=>p.isFavorite);else projs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const le=document.getElementById('projects-list');le.innerHTML='';
+  if(!projs.length){le.innerHTML='<div class="empty-state">No projects.</div>';return;}
+  const cnt=projectsShowAll?projs.length:Math.min(9,projs.length);
+  for(let i=0;i<cnt;i++){const p=projs[i],abbr=PROJECT_ABBR[p.category]||p.category.slice(0,4);
+    const d=document.createElement('div');d.className='list-item'+(selectedProjectId===p.id?' selected':'');
+    d.onclick=()=>{selectedProjectId=selectedProjectId===p.id?null:p.id;renderProjectsPanel();};
+    d.innerHTML=`<span class="list-item-badge">${abbr}</span><span class="list-item-name">${escHtml(p.name)}</span>${p.isPrivate?'<span class="private-badge">priv</span>':''}<span class="fav-star" onclick="toggleFavorite('${p.id}',event)">${p.isFavorite?'★':'☆'}</span>`;
+    le.appendChild(d);}
+  if(projs.length>9&&!projectsShowAll){const l=document.createElement('span');l.className='view-all-link';l.textContent=`View all (${projs.length})`;l.onclick=()=>{projectsShowAll=true;renderProjectsPanel();};le.appendChild(l);}
+}
+
+function toggleProjectFilter(c){const i=activeProjectFilters.indexOf(c);if(i>=0)activeProjectFilters.splice(i,1);else activeProjectFilters.push(c);projectsShowAll=false;renderProjectsPanel();}
+function addCustomProjectCategory(){const n=prompt('New category:');if(!n?.trim())return;updateUserData(u=>{if(!u.customProjectCategories)u.customProjectCategories=[];if(!u.customProjectCategories.includes(n.trim()))u.customProjectCategories.push(n.trim());});renderProjectsPanel();}
+function toggleFavorite(id,e){e.stopPropagation();updateUserData(u=>{const p=u.activeProjects.find(p=>p.id===id);if(p)p.isFavorite=!p.isFavorite;});renderProjectsPanel();}
+
+function openAddProjectModal(editId=null){
+  const user=getCurrentUserData(),allCats=[...PROJECT_CATEGORIES,...(user.customProjectCategories||[])];
+  const ex=editId?user.activeProjects.find(p=>p.id===editId):null;
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Project</div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="fp2-name" value="${ex?escAttr(ex.name):''}"></div>
+    <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="fp2-cat">${allCats.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Notes (one per line)</label><textarea class="form-textarea" id="fp2-notes">${ex?(ex.notesForDisplayPanel||[]).join('\n'):''}</textarea></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="fp2-fav" ${ex&&ex.isFavorite?'checked':''}> Favorite</label>
+    <label class="form-checkbox-row" style="margin-top:6px;"><input type="checkbox" id="fp2-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveProject('${editId||''}')">Save</button></div>`);
+}
+
+function saveProject(editId){
+  const name=document.getElementById('fp2-name').value.trim();if(!name){alert('Name required.');return;}
+  const cat=document.getElementById('fp2-cat').value,notes=document.getElementById('fp2-notes').value.split('\n').filter(l=>l.trim());
+  const fav=document.getElementById('fp2-fav').checked,priv=document.getElementById('fp2-private').checked;
+  updateUserData(u=>{if(editId){const p=u.activeProjects.find(p=>p.id===editId);if(p){p.name=name;p.category=cat;p.notesForDisplayPanel=notes;p.isFavorite=fav;p.isPrivate=priv;}}else u.activeProjects.push({id:uid(),name,category:cat,isFavorite:fav,isPrivate:priv,isArchived:false,notesForDisplayPanel:notes,linkedGoalId:null,createdAt:new Date().toISOString()});});
+  closeModal();renderProjectsPanel();renderTodayPanel();renderProjectDisplay();
+}
+
+function archiveSelectedProject(){if(!selectedProjectId){alert('Select a project first.');return;}if(!confirm('Archive?'))return;updateUserData(u=>{const p=u.activeProjects.find(p=>p.id===selectedProjectId);if(p)p.isArchived=true;});selectedProjectId=null;renderProjectsPanel();renderProjectDisplay();}
+
+function openManageProjectsModal(){
+  const user=getCurrentUserData(),act=(user.activeProjects||[]).filter(p=>!p.isArchived),arc=(user.activeProjects||[]).filter(p=>p.isArchived);
+  let h=`<div class="modal-title">Manage Projects</div><div class="form-label" style="margin-bottom:6px;">Active</div>`;
+  if(!act.length)h+='<div class="empty-state">None.</div>';
+  act.forEach(p=>{h+=`<div class="manage-list-item"><div class="name">${escHtml(p.name)}</div><span class="tag">${p.category}</span><button class="btn btn-sm" onclick="closeModal();openAddProjectModal('${p.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}')">Del</button></div>`;});
+  if(arc.length){h+=`<div class="form-label" style="margin:10px 0 6px;">Archived</div>`;arc.forEach(p=>{h+=`<div class="manage-list-item"><div class="name" style="color:var(--text-light)">${escHtml(p.name)}</div><button class="btn btn-sm" onclick="restoreProject('${p.id}')">Restore</button></div>`;});}
+  h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;openModal(null,h);
+}
+function deleteProject(id){if(!confirm('Delete permanently?'))return;updateUserData(u=>{u.activeProjects=u.activeProjects.filter(p=>p.id!==id);});closeModal();renderProjectsPanel();}
+function restoreProject(id){updateUserData(u=>{const p=u.activeProjects.find(p=>p.id===id);if(p)p.isArchived=false;});closeModal();renderProjectsPanel();}
+function openViewAllProjects(){projectsShowAll=true;renderProjectsPanel();}
+
+/* ============================================================
+   LEFT — SCHEDULE
+============================================================ */
+function renderSchedulePanel(){
+  const user=getCurrentUserData();if(!user)return;
+  const allCats=[...SCHEDULE_CATEGORIES,...(user.customScheduleCategories||[])];
+  const fe=document.getElementById('schedule-filters');fe.innerHTML='<div class="filter-label">Filter</div>';
+  allCats.forEach(c=>{const d=document.createElement('div');d.className='filter-item'+(activeScheduleFilters.includes(c)?' active':'');d.textContent=c;d.onclick=()=>toggleScheduleFilter(c);fe.appendChild(d);});
+  const an=document.createElement('div');an.className='filter-item add-new';an.textContent='+ Add';an.onclick=addCustomScheduleCategory;fe.appendChild(an);
+  const now=new Date();
+  let evs=(user.scheduleEvents||[]).filter(e=>!e.isArchived&&isVisible(e)&&new Date(e.date)>=now);
+  if(activeScheduleFilters.length)evs=evs.filter(e=>activeScheduleFilters.includes(e.category));
+  evs.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const le=document.getElementById('schedule-list');le.innerHTML='';
+  if(!evs.length){le.innerHTML='<div class="empty-state">No upcoming events.</div>';return;}
+  const cnt=eventsShowAll?evs.length:Math.min(7,evs.length);
+  for(let i=0;i<cnt;i++){const ev=evs[i],ds=new Date(ev.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const d=document.createElement('div');d.className='schedule-item';
+    d.innerHTML=`<div class="schedule-date">${ds}</div><div class="schedule-title">${escHtml(ev.title)}${ev.recurringPattern?' <span class="tag">↻</span>':''}${ev.isPrivate?' <span class="private-badge">priv</span>':''}</div>`;
+    le.appendChild(d);}
+  if(evs.length>7&&!eventsShowAll){const l=document.createElement('span');l.className='view-all-link';l.textContent=`View all (${evs.length})`;l.onclick=()=>{eventsShowAll=true;renderSchedulePanel();};le.appendChild(l);}
+}
+function toggleScheduleFilter(c){const i=activeScheduleFilters.indexOf(c);if(i>=0)activeScheduleFilters.splice(i,1);else activeScheduleFilters.push(c);renderSchedulePanel();}
+function addCustomScheduleCategory(){const n=prompt('New category:');if(!n?.trim())return;updateUserData(u=>{if(!u.customScheduleCategories)u.customScheduleCategories=[];if(!u.customScheduleCategories.includes(n.trim()))u.customScheduleCategories.push(n.trim());});renderSchedulePanel();}
+
+function openAddEventModal(editId=null){
+  const user=getCurrentUserData(),allCats=[...SCHEDULE_CATEGORIES,...(user.customScheduleCategories||[])];
+  const ex=editId?user.scheduleEvents.find(e=>e.id===editId):null,today=new Date().toISOString().slice(0,10);
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Event</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="fe-title" value="${ex?escAttr(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="fe-date" type="date" value="${ex?ex.date.slice(0,10):today}"></div>
+    <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="fe-cat">${allCats.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="fe-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveEvent('${editId||''}')">Save</button></div>`);
+}
+
+function openAddRecurringEventModal(){
+  const user=getCurrentUserData(),allCats=[...SCHEDULE_CATEGORIES,...(user.customScheduleCategories||[])],today=new Date().toISOString().slice(0,10);
+  openModal(null,`<div class="modal-title">Add Recurring Event</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="fe-title"></div>
+    <div class="form-group"><label class="form-label">Start Date</label><input class="form-input" id="fe-date" type="date" value="${today}"></div>
+    <div class="form-group"><label class="form-label">Pattern</label><select class="form-select" id="fe-recurring"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div>
+    <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="fe-cat">${allCats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="fe-private"> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveEvent('',true)">Save</button></div>`);
+}
+
+function saveEvent(editId,recurring=false){
+  const title=document.getElementById('fe-title').value.trim();if(!title){alert('Title required.');return;}
+  const date=document.getElementById('fe-date').value,cat=document.getElementById('fe-cat').value,priv=document.getElementById('fe-private').checked;
+  const rp=recurring?document.getElementById('fe-recurring').value:null;
+  updateUserData(u=>{if(editId){const e=u.scheduleEvents.find(e=>e.id===editId);if(e){e.title=title;e.date=new Date(date).toISOString();e.category=cat;e.isPrivate=priv;}}else u.scheduleEvents.push({id:uid(),title,category:cat,date:new Date(date).toISOString(),recurringPattern:rp,isArchived:false,isPrivate:priv});});
+  closeModal();renderSchedulePanel();
+}
+
+function openManageEventsModal(){
+  const user=getCurrentUserData(),evs=(user.scheduleEvents||[]).filter(e=>!e.isArchived);
+  let h=`<div class="modal-title">Manage Events</div>`;
+  if(!evs.length)h+='<div class="empty-state">No events.</div>';
+  evs.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(e=>{const ds=new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});h+=`<div class="manage-list-item"><div class="name">${ds} — ${escHtml(e.title)}</div>${e.recurringPattern?`<span class="tag">↻${e.recurringPattern}</span>`:''}<button class="btn btn-sm" onclick="closeModal();openAddEventModal('${e.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Del</button></div>`;});
+  h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;openModal(null,h);
+}
+function deleteEvent(id){if(!confirm('Delete?'))return;updateUserData(u=>{u.scheduleEvents=u.scheduleEvents.filter(e=>e.id!==id);});closeModal();renderSchedulePanel();}
+function openViewAllEvents(){eventsShowAll=true;renderSchedulePanel();}
+
+/* ============================================================
+   JOURNAL / DIARY
+============================================================ */
+function openJournalModal(prefillTitle='',prefillType=''){
+  if(prefillTitle||prefillType){openNewEntryModal('journal',prefillTitle,prefillType);return;}
+  const user=getCurrentUserData(),entries=(user.journals||[]).filter(j=>isVisible({isPrivate:!j.isPublic}));
+  const eh=entries.length?entries.map(j=>`<div style="margin-bottom:10px;padding:10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);"><div style="font-weight:600;font-size:13px;margin-bottom:3px;">${escHtml(j.title)}</div><div style="font-size:12px;color:var(--text-muted);">${escHtml(j.content.slice(0,120))}${j.content.length>120?'…':''}</div><div style="margin-top:5px;display:flex;gap:5px;align-items:center;">${j.reportType?`<span class="tag">${j.reportType}</span>`:''}<span style="font-size:11px;color:var(--text-light);">${new Date(j.createdAt).toLocaleDateString()}</span></div></div>`).join(''):'<div class="empty-state">No journal entries yet.</div>';
+  openModal(null,`<div class="modal-title">Journal</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Public by default.</p><button class="btn btn-accent" style="margin-bottom:12px;" onclick="openNewEntryModal('journal')">+ New Entry</button>${eh}<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+function openDiaryModal(){
+  const user=getCurrentUserData(),entries=user.diaries||[];
+  const eh=entries.length?entries.map(j=>`<div style="margin-bottom:10px;padding:10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);"><div style="font-weight:600;font-size:13px;margin-bottom:3px;">${escHtml(j.title)} <span class="private-badge">private</span></div><div style="font-size:12px;color:var(--text-muted);">${escHtml(j.content.slice(0,120))}${j.content.length>120?'…':''}</div><div style="font-size:11px;color:var(--text-light);margin-top:5px;">${new Date(j.createdAt).toLocaleDateString()}</div></div>`).join(''):'<div class="empty-state">No diary entries yet.</div>';
+  openModal(null,`<div class="modal-title">Diary</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Always private.</p><button class="btn btn-accent" style="margin-bottom:12px;" onclick="openNewEntryModal('diary')">+ New Entry</button>${eh}<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+function openNewEntryModal(type,prefillTitle='',prefillType=''){
+  openModal(null,`<div class="modal-title">New ${type==='journal'?'Journal':'Diary'} Entry</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="je-title" value="${escAttr(prefillTitle)}"></div>
+    <div class="form-group"><label class="form-label">Content</label><textarea class="form-textarea" id="je-content" style="min-height:120px;"></textarea></div>
+    <div class="form-group"><label class="form-label">Report Type</label>
+      <select class="form-select" id="je-type">${REPORT_TYPES.map(t=>`<option value="${t}" ${t===prefillType?'selected':''}>${t||'None'}</option>`).join('')}</select></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveEntry('${type}')">Save</button></div>`);
+}
+
+function saveEntry(type){
+  const title=document.getElementById('je-title').value.trim(),content=document.getElementById('je-content').value.trim();
+  if(!title||!content){alert('Title and content required.');return;}
+  const rt=document.getElementById('je-type').value;
+  updateUserData(u=>{const e={id:uid(),title,content,reportType:rt,createdAt:new Date().toISOString()};if(type==='journal'){e.isPublic=true;if(!u.journals)u.journals=[];u.journals.push(e);}else{e.isPublic=false;if(!u.diaries)u.diaries=[];u.diaries.push(e);}});
+  closeModal();
+}
+
+/* ============================================================
+   CENTER — TODAY PANEL
+============================================================ */
+function renderTodayPanel(){
+  const user=getCurrentUserData();if(!user)return;
+  const ds=new Date().toDateString();
+  // Gratitude
+  document.getElementById('today-gratitude-row').innerHTML=`<div class="today-row-label">🌱 Gratitude</div><div class="today-row-content">${escHtml(GRATITUDE[dailyIdx(GRATITUDE,ds)])}</div>`;
+  // Goal
+  const s=user.settings||{},tf=s.goalTimeframe||'monthly';
+  const goals=(user.goals||[]).filter(g=>!g.isArchived&&isVisible(g));
+  let g=s.primaryGoalId?goals.find(g=>g.id===s.primaryGoalId):null;
+  if(!g)g=goals.find(g=>g.isPrimary);if(!g&&goals.length)g=goals[goals.length-1];
+  document.getElementById('today-goal-row').innerHTML=`<div class="today-row-label">🎯 Goal</div>${g?`<div class="today-row-content">${escHtml(g.text)}</div><div class="today-row-meta">[${g.category}] · ${tf} view</div>`:`<div class="today-row-content" style="color:var(--text-light);font-style:italic;">No goal set. <span class="today-goal-link" onclick="openAddGoalModal()">Add one →</span></div>`}`;
+  // Quote
+  const qs=(s.quoteSources&&s.quoteSources.length)?s.quoteSources:null;
+  let pool=qs?QUOTES.filter(q=>qs.includes(q.author)):QUOTES;if(!pool.length)pool=QUOTES;
+  const q=pool[dailyIdx(pool,ds+'q')];
+  document.getElementById('today-quote-row').innerHTML=`<div class="today-row-label">💬 Quote</div><div class="today-row-content" style="font-style:italic;">"${escHtml(q.text)}"</div><div class="today-row-meta">— ${escHtml(q.author)}</div>`;
+}
+
+function openTodaySettingsModal(){
+  const user=getCurrentUserData(),s=user.settings||{};
+  const goals=(user.goals||[]).filter(g=>!g.isArchived&&isVisible(g));
+  const authors=[...new Set(QUOTES.map(q=>q.author))].sort();
+  const gOpts=goals.map(g=>`<option value="${g.id}" ${s.primaryGoalId===g.id?'selected':''}>${escHtml(g.text.slice(0,45))}</option>`).join('');
+  const aCbs=authors.map(a=>`<label class="form-checkbox-row" style="margin-top:3px;"><input type="checkbox" name="qa" value="${escAttr(a)}" ${(!s.quoteSources||!s.quoteSources.length||s.quoteSources.includes(a))?'checked':''}> ${escHtml(a)}</label>`).join('');
+  openModal(null,`<div class="modal-title">Today Panel Settings</div>
+    <div class="form-group"><label class="form-label">Goal Timeframe</label><select class="form-select" id="ts-tf"><option value="daily" ${tf(s)==='daily'?'selected':''}>Daily</option><option value="weekly" ${tf(s)==='weekly'?'selected':''}>Weekly</option><option value="monthly" ${tf(s)==='monthly'?'selected':''}>Monthly</option></select></div>
+    <div class="form-group"><label class="form-label">Primary Goal to Display</label><select class="form-select" id="ts-pg"><option value="">— Most recent —</option>${gOpts}</select></div>
+    <div class="form-group"><label class="form-label">Quote Authors</label><div style="max-height:160px;overflow-y:auto;padding:4px;">${aCbs}</div></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveTodaySettings()">Save</button></div>`);
+}
+function tf(s){return s.goalTimeframe||'monthly';}
+
+function saveTodaySettings(){
+  const tfv=document.getElementById('ts-tf').value,pgv=document.getElementById('ts-pg').value||null;
+  const checked=Array.from(document.querySelectorAll('input[name="qa"]:checked')).map(e=>e.value);
+  const allA=[...new Set(QUOTES.map(q=>q.author))];
+  const qs=checked.length===allA.length?[]:checked;
+  updateUserData(u=>{u.settings={...(u.settings||{}),goalTimeframe:tfv,primaryGoalId:pgv,quoteSources:qs};});
+  closeModal();renderTodayPanel();
+}
+
+/* ============================================================
+   CENTER — AI ASSISTANT
+============================================================ */
+/* ============================================================
+   AI AGENT — Pollinations AI (free, no account, no popup needed)
+   Uses pollinations.ai — completely free, no signup, no API key.
+============================================================ */
+
+// aiChatHistory already declared in global state above
+
+// ── Build a rich snapshot of all user data for AI context ──────
+function buildAIContext() {
+  const user = getCurrentUserData();
+  if (!user) return '{}';
+  const snap = {
+    name: user.name,
+    goals: (user.goals||[]).filter(g=>!g.isArchived)
+      .map(g=>({ text:g.text, category:g.category, timeframe:g.timeframe||'', isPrimary:g.isPrimary||false })),
+    projects: (user.activeProjects||[]).filter(p=>!p.isArchived)
+      .map(p=>({ name:p.name, category:p.category, notes:(p.notesForDisplayPanel||[]).filter(Boolean), favorite:p.isFavorite })),
+    people: (user.people||[]).filter(p=>!p.isArchived)
+      .map(p=>({ name:p.name, labels:p.labels||p.categories||[], notes:p.notes||'', connection:p.connectionStatus })),
+    schedule: (user.scheduleEvents||[]).filter(e=>!e.isArchived)
+      .map(e=>({ title:e.title, date:e.date||e.startDateTime||'', category:e.category, location:e.location||'' })),
+    journals: (user.journals||[]).slice(-15)
+      .map(j=>({ title:j.title, content:(j.content||'').slice(0,300), reportType:j.reportType||'', date:j.createdAt })),
+    diaries: (user.diaries||[]).slice(-10)
+      .map(d=>({ title:d.title, content:(d.content||'').slice(0,200), date:d.createdAt })),
+    reading: (user.reading||[]).filter(r=>!r.isArchived)
+      .map(r=>({ title:r.title, author:r.author||'' })),
+    movies: (user.movies||[]).filter(m=>!m.isArchived)
+      .map(m=>({ title:m.title, year:m.year||'' })),
+    fitness: (user.fitness||[]).filter(f=>!f.isArchived).map(f=>f.name),
+    experiences: (user.experiences||[]).filter(e=>!e.isArchived).map(e=>e.title),
+    diet: (user.diet||[]).filter(d=>!d.isArchived).map(d=>d.goal),
+    lifeMgmt: (user.lifeMgmt||[]).filter(l=>!l.isArchived)
+      .map(l=>({ activity:l.activity, category:l.category, description:l.description||'' })),
+  };
+  return JSON.stringify(snap, null, 1);
+}
+
+// ── System prompt given to GPT-4o ──────────────────────────────
+function buildSystemPrompt() {
+  return `You are an intelligent personal assistant built into the Idea Index app for ${getCurrentUserData()?.name||'the user'}.
+
+You have two jobs:
+1. ANSWER questions using the user's personal data below.
+2. TAKE ACTIONS by returning a special JSON action block when the user asks you to do something.
+
+== ANSWERING ==
+Search the user's data carefully before answering. Be specific — quote their actual data when relevant.
+Examples: "What books did I read about space?" → look through reading list. "Who are my mentors?" → filter people by label.
+
+== TAKING ACTIONS ==
+When the user asks to DO something, end your response with an action block like this (nothing after it):
+<ACTION>{"type":"ACTION_TYPE","data":{}}</ACTION>
+
+Available actions:
+- Open Add Goal modal:          <ACTION>{"type":"openAddGoal","data":{"text":"optional prefill","category":"optional"}}</ACTION>
+- Open Add Project modal:       <ACTION>{"type":"openAddProject","data":{"name":"optional prefill"}}</ACTION>
+- Open Add Book modal:          <ACTION>{"type":"openAddBook","data":{}}</ACTION>
+- Open Add Movie modal:         <ACTION>{"type":"openAddMovie","data":{}}</ACTION>
+- Open Add Fitness modal:       <ACTION>{"type":"openAddFitness","data":{}}</ACTION>
+- Open Add Experience modal:    <ACTION>{"type":"openAddExperience","data":{}}</ACTION>
+- Open Add Event modal:         <ACTION>{"type":"openAddEvent","data":{}}</ACTION>
+- Open Add Person modal:        <ACTION>{"type":"openAddPerson","data":{}}</ACTION>
+- Open Journal (book report):   <ACTION>{"type":"openJournal","data":{"type":"Book Report","title":"optional"}}</ACTION>
+- Open Journal (movie report):  <ACTION>{"type":"openJournal","data":{"type":"Movie Report","title":"optional"}}</ACTION>
+- Open Journal (experience):    <ACTION>{"type":"openJournal","data":{"type":"Experience Report","title":"optional"}}</ACTION>
+- Open Journal (general):       <ACTION>{"type":"openJournal","data":{"type":"","title":"optional"}}</ACTION>
+- Scroll to a panel:            <ACTION>{"type":"scrollTo","data":{"panel":"goals-panel"}}</ACTION>
+  (valid panels: people-panel, projects-panel, schedule-panel, today-panel, goals-panel, fitness-panel, reading-panel, movies-panel, experiences-panel, diet-panel, lifemgmt-panel)
+- Switch view mode:             <ACTION>{"type":"setView","data":{"view":"private"}}</ACTION>
+  (view can be: private, connections, public)
+- Filter people by label:       <ACTION>{"type":"filterPeople","data":{"label":"Mentor"}}</ACTION>
+
+Use actions proactively. "Write a book report" → answer + openJournal Book Report action.
+"Add a goal to exercise daily" → answer + openAddGoal action with text prefilled.
+"Show my schedule" → answer + scrollTo schedule-panel action.
+
+Today's date: ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+
+== USER'S DATA ==
+${buildAIContext()}`;
+}
+
+// ── Execute action returned by AI ──────────────────────────────
+function executeAIAction(action) {
+  try {
+    const { type, data } = action;
+    switch(type) {
+      case 'openAddGoal':
+        closeModal(); openAddGoalModal();
+        if(data.text) setTimeout(()=>{ const el=document.getElementById('fg-text'); if(el) el.value=data.text; },100);
+        if(data.category) setTimeout(()=>{ const el=document.getElementById('fg-cat'); if(el) el.value=data.category; },100);
+        break;
+      case 'openAddProject':
+        closeModal(); openAddProjectModal();
+        if(data.name) setTimeout(()=>{ const el=document.getElementById('fp2-name'); if(el) el.value=data.name; },100);
+        break;
+      case 'openAddBook':    closeModal(); openAddBookModal(); break;
+      case 'openAddMovie':   closeModal(); openAddMovieModal(); break;
+      case 'openAddFitness': closeModal(); openAddSimpleItemModal('fitness'); break;
+      case 'openAddExperience': closeModal(); openAddExperienceModal(); break;
+      case 'openAddEvent':   closeModal(); openAddEventModal(); break;
+      case 'openAddPerson':  closeModal(); openAddPersonModal(); break;
+      case 'openJournal':
+        closeModal();
+        openNewEntryModal('journal', data.title||'', data.type||'');
+        break;
+      case 'scrollTo':
+        const panel = document.getElementById(data.panel);
+        if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
+        break;
+      case 'setView':
+        viewMode = data.view||'private';
+        const radio = document.getElementById('view-'+viewMode);
+        if(radio) radio.checked = true;
+        renderAllPanels();
+        break;
+      case 'filterPeople':
+        activePeopleFilters = [data.label];
+        renderPeoplePanel();
+        document.getElementById('people-panel')?.scrollIntoView({behavior:'smooth',block:'start'});
+        break;
+    }
+  } catch(e) { console.error('Action error:', e); }
+}
+
+// ── Render chat messages ───────────────────────────────────────
+function renderAIChat() {
+  const el = document.getElementById('ai-chat-messages');
+  if (!el) return;
+  el.innerHTML = '';
+  aiChatHistory.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'chat-msg ' + m.role;
+    // Strip action tags from display
+    const display = m.content.replace(/<ACTION>[\s\S]*?<\/ACTION>/g, '').trim();
+    d.innerHTML = display;
+    el.appendChild(d);
+  });
+  el.scrollTop = el.scrollHeight;
+}
+
+function aiAddMessage(role, content) {
+  aiChatHistory.push({ role, content });
+  if (aiChatHistory.length > 40) aiChatHistory = aiChatHistory.slice(-40);
+  renderAIChat();
+}
+
+function initAIChat() {
+  aiChatHistory = [];
+  renderAIChat();
+  aiAddMessage('assistant', 'Hi! I\'m your AI agent — I can read all your data and take actions for you.<br><br>Try:<br>• <em>"What books did I read this year?"</em><br>• <em>"Write a book report"</em><br>• <em>"Add a goal to exercise daily"</em><br>• <em>"Who are my mentors?"</em><br>• <em>"Show my schedule"</em>');
+}
+
+function clearAIChat() { initAIChat(); }
+
+async function sendAIMessage() {
+  const inp = document.getElementById('ai-input');
+  const msg = (inp.value || '').trim();
+  if (!msg) return;
+  inp.value = '';
+
+  aiAddMessage('user', msg);
+
+  const btn = document.getElementById('ai-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+
+  // Show thinking indicator
+  aiChatHistory.push({ role: 'assistant', content: '<em style="color:var(--text-light)">Thinking…</em>', _thinking: true });
+  renderAIChat();
+
+  try {
+    // Build message history for context (last 10 exchanges)
+    const history = aiChatHistory
+      .filter(m => !m._thinking)
+      .slice(-10)
+      .map(m => ({
+        role: m.role,
+        content: m.content.replace(/<ACTION>[\s\S]*?<\/ACTION>/g,'').replace(/<[^>]+>/g,' ').trim()
+      }));
+
+    const messages = [
+      { role: 'system', content: buildSystemPrompt() },
+      ...history
+    ];
+
+    // Pollinations AI — completely free, no account, no popup, no API key
+    const response = await fetch('https://text.pollinations.ai/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'openai',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 600
+      })
+    });
+
+    if (!response.ok) throw new Error('API error ' + response.status);
+    const data = await response.json();
+    const reply = data?.choices?.[0]?.message?.content || 'Sorry, I could not get a response.';
+
+    aiChatHistory = aiChatHistory.filter(m => !m._thinking);
+    aiAddMessage('assistant', reply);
+
+    // Execute any action the AI returned
+    const actionMatch = reply.match(/<ACTION>([\s\S]*?)<\/ACTION>/);
+    if (actionMatch) {
+      try { executeAIAction(JSON.parse(actionMatch[1])); }
+      catch(e) { console.error('Action parse error:', e); }
+    }
+
+  } catch(e) {
+    aiChatHistory = aiChatHistory.filter(m => !m._thinking);
+    console.error('AI error:', e);
+    aiAddMessage('assistant', '⚠️ Could not reach AI. Please check your internet connection and try again.');
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+}
+
+// Alias for compatibility
+function processAICommand(text) { sendAIMessage(); }
+
+/* ============================================================
+   RIGHT — GOALS
+============================================================ */
+function renderGoalsPanel(){
+  const user=getCurrentUserData();if(!user)return;
+  let goals=(user.goals||[]).filter(g=>!g.isArchived&&isVisible(g)).sort((a,b)=>(a.order||0)-(b.order||0));
+  const le=document.getElementById('goals-list');le.innerHTML='';
+  if(!goals.length){le.innerHTML='<div class="empty-state">No goals yet.</div>';return;}
+  const cnt=goalsShowAll?goals.length:Math.min(3,goals.length);
+  for(let i=0;i<cnt;i++){
+    const g=goals[i];const linked=(user.activeProjects||[]).find(p=>p.id===g.linkedProjectId);
+    const d=document.createElement('div');d.className='simple-list-item'+(selectedGoalId===g.id?' selected':'');
+    d.onclick=()=>{selectedGoalId=selectedGoalId===g.id?null:g.id;renderGoalsPanel();};
+    d.innerHTML=`<span class="item-cat">${g.category}</span><span class="item-text">${escHtml(g.text)}</span>${g.isPrivate?'<span class="private-badge">priv</span>':''}${linked?`<span class="item-link-icon" title="Linked: ${escAttr(linked.name)}">🔗</span>`:''}${g.isPrimary?'<span class="tag" style="background:#fef3cd;color:#856404;border-color:#ffd966;">★</span>':''}`;
+    le.appendChild(d);
+  }
+  if(goals.length>3){const l=document.createElement('span');l.className='view-all-link';l.textContent=goalsShowAll?'Show less':`View all (${goals.length})`;l.onclick=()=>{goalsShowAll=!goalsShowAll;renderGoalsPanel();};le.appendChild(l);}
+}
+function toggleGoalsViewAll(){goalsShowAll=!goalsShowAll;renderGoalsPanel();}
+
+function openAddGoalModal(editId=null){
+  const user=getCurrentUserData(),ex=editId?(user.goals||[]).find(g=>g.id===editId):null;
+  const projs=(user.activeProjects||[]).filter(p=>!p.isArchived);
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Goal</div>
+    <div class="form-group"><label class="form-label">Goal</label><input class="form-input" id="fg-text" value="${ex?escAttr(ex.text):''}"></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-select" id="fg-cat">${GOAL_CATEGORIES.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Timeframe</label>
+      <select class="form-select" id="fg-tf"><option value="daily" ${ex&&ex.timeframe==='daily'?'selected':''}>Daily</option><option value="weekly" ${ex&&ex.timeframe==='weekly'?'selected':''}>Weekly</option><option value="monthly" ${!ex||ex.timeframe==='monthly'?'selected':''}>Monthly</option></select></div>
+    <div class="form-group"><label class="form-label">Link to Project (optional)</label>
+      <select class="form-select" id="fg-proj"><option value="">— None —</option>${projs.map(p=>`<option value="${p.id}" ${ex&&ex.linkedProjectId===p.id?'selected':''}>${escHtml(p.name)}</option>`).join('')}</select></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="fg-primary" ${ex&&ex.isPrimary?'checked':''}> Primary goal (shown in Today panel)</label>
+    <label class="form-checkbox-row" style="margin-top:6px;"><input type="checkbox" id="fg-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveGoal('${editId||''}')">Save</button></div>`);
+}
+
+function saveGoal(editId){
+  const text=document.getElementById('fg-text').value.trim();if(!text){alert('Goal text required.');return;}
+  const cat=document.getElementById('fg-cat').value,tf2=document.getElementById('fg-tf').value;
+  const linkedProjectId=document.getElementById('fg-proj').value||null;
+  const isPrimary=document.getElementById('fg-primary').checked,isPrivate=document.getElementById('fg-private').checked;
+  updateUserData(u=>{
+    if(!u.goals)u.goals=[];
+    if(isPrimary)u.goals.forEach(g=>g.isPrimary=false);
+    if(editId){const g=u.goals.find(g=>g.id===editId);if(g){g.text=text;g.category=cat;g.timeframe=tf2;g.linkedProjectId=linkedProjectId;g.isPrimary=isPrimary;g.isPrivate=isPrivate;}}
+    else u.goals.push({id:uid(),text,category:cat,timeframe:tf2,linkedProjectId,order:u.goals.length,isArchived:false,isPrivate,isPrimary});
+  });
+  closeModal();renderGoalsPanel();renderTodayPanel();
+}
+
+function archiveSelectedGoal(){if(!selectedGoalId){alert('Select a goal first.');return;}if(!confirm('Archive?'))return;updateUserData(u=>{const g=(u.goals||[]).find(g=>g.id===selectedGoalId);if(g)g.isArchived=true;});selectedGoalId=null;renderGoalsPanel();renderTodayPanel();}
+
+function openManageGoalsModal(){
+  const user=getCurrentUserData(),act=(user.goals||[]).filter(g=>!g.isArchived).sort((a,b)=>(a.order||0)-(b.order||0)),arc=(user.goals||[]).filter(g=>g.isArchived);
+  let h=`<div class="modal-title">Manage Goals</div>`;
+  if(!act.length)h+='<div class="empty-state">No goals.</div>';
+  act.forEach((g,i,a)=>{h+=`<div class="manage-list-item"><div style="display:flex;flex-direction:column;gap:2px;"><button class="btn btn-sm" ${i===0?'disabled':''} onclick="moveGoal('${g.id}',-1)">↑</button><button class="btn btn-sm" ${i===a.length-1?'disabled':''} onclick="moveGoal('${g.id}',1)">↓</button></div><div class="name">${escHtml(g.text.slice(0,42))}</div><span class="tag">${g.category}</span><button class="btn btn-sm" onclick="closeModal();openAddGoalModal('${g.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('${g.id}')">Del</button></div>`;});
+  if(arc.length){h+=`<div class="form-label" style="margin:10px 0 6px;">Archived</div>`;arc.forEach(g=>{h+=`<div class="manage-list-item"><div class="name" style="color:var(--text-light)">${escHtml(g.text.slice(0,42))}</div><button class="btn btn-sm" onclick="restoreGoal('${g.id}')">Restore</button></div>`;});}
+  h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;openModal(null,h);
+}
+
+function moveGoal(id,dir){
+  updateUserData(u=>{
+    const goals=(u.goals||[]).filter(g=>!g.isArchived).sort((a,b)=>(a.order||0)-(b.order||0));
+    const i=goals.findIndex(g=>g.id===id);if(i<0)return;const ni=i+dir;if(ni<0||ni>=goals.length)return;
+    const tmp=goals[i].order;goals[i].order=goals[ni].order;goals[ni].order=tmp;
+    goals.forEach((g,idx)=>{const r=u.goals.find(ug=>ug.id===g.id);if(r)r.order=idx;});
+  });
+  closeModal();openManageGoalsModal();
+}
+function deleteGoal(id){if(!confirm('Delete permanently?'))return;updateUserData(u=>{u.goals=(u.goals||[]).filter(g=>g.id!==id);});closeModal();renderGoalsPanel();renderTodayPanel();}
+function restoreGoal(id){updateUserData(u=>{const g=(u.goals||[]).find(g=>g.id===id);if(g)g.isArchived=false;});closeModal();openManageGoalsModal();renderGoalsPanel();}
+
+/* ============================================================
+   RIGHT — SIMPLE PANELS (fitness, reading, movies, experiences, diet)
+============================================================ */
+const PCFG={
+  fitness: {key:'fitness', label:'Fitness Goal', listId:'fitness-list', textFn:i=>i.name},
+  reading: {key:'reading', label:'Book',          listId:'reading-list', textFn:i=>`${i.title}${i.author?' — '+i.author:''}`},
+  movies:  {key:'movies',  label:'Movie',         listId:'movies-list',  textFn:i=>`${i.title}${i.year?' ('+i.year+')':''}`},
+  experiences:{key:'experiences',label:'Experience',listId:'experiences-list',textFn:i=>`${i.title}${i.date?' — '+i.date:''}`},
+  diet:    {key:'diet',    label:'Diet Goal',     listId:'diet-list',    textFn:i=>i.goal}
+};
+
+function renderSimplePanel(pk){
+  const user=getCurrentUserData();if(!user)return;const cfg=PCFG[pk];if(!cfg)return;
+  const items=(user[cfg.key]||[]).filter(i=>!i.isArchived&&isVisible(i));
+  const le=document.getElementById(cfg.listId);le.innerHTML='';
+  if(!items.length){le.innerHTML='<div class="empty-state">Nothing yet.</div>';return;}
+  const cnt=simpleShowAll[pk]?items.length:Math.min(3,items.length);
+  for(let i=0;i<cnt;i++){
+    const item=items[i];const d=document.createElement('div');
+    d.className='simple-list-item'+(selectedSimpleItems[pk]===item.id?' selected':'');
+    d.onclick=()=>{selectedSimpleItems[pk]=selectedSimpleItems[pk]===item.id?null:item.id;renderSimplePanel(pk);};
+    d.innerHTML=`<span class="item-text">${escHtml(cfg.textFn(item))}</span>${item.isPrivate?'<span class="private-badge">priv</span>':''}`;
+    le.appendChild(d);
+  }
+  if(items.length>3){const l=document.createElement('span');l.className='view-all-link';l.textContent=simpleShowAll[pk]?'Show less':`View all (${items.length})`;l.onclick=()=>{simpleShowAll[pk]=!simpleShowAll[pk];renderSimplePanel(pk);};le.appendChild(l);}
+}
+
+function toggleSimpleViewAll(pk){simpleShowAll[pk]=!simpleShowAll[pk];renderSimplePanel(pk);}
+
+function archiveSelectedSimpleItem(pk){
+  const sel=selectedSimpleItems[pk];if(!sel){alert('Select an item first.');return;}if(!confirm('Archive?'))return;
+  updateUserData(u=>{const it=(u[pk]||[]).find(i=>i.id===sel);if(it)it.isArchived=true;});
+  selectedSimpleItems[pk]=null;renderSimplePanel(pk);
+}
+
+function writeReportFor(pk){
+  const user=getCurrentUserData(),cfg=PCFG[pk],sel=selectedSimpleItems[pk];
+  let title='',rt=REPORT_TYPE_MAP[pk]||'';
+  if(sel){const item=(user[pk]||[]).find(i=>i.id===sel);if(item)title=cfg.textFn(item);}
+  closeModal();openNewEntryModal('journal',title,rt);
+}
+
+/* Generic add for fitness & diet (single text field) */
+function openAddSimpleItemModal(pk){
+  const cfg=PCFG[pk];
+  openModal(null,`<div class="modal-title">Add ${cfg.label}</div>
+    <div class="form-group"><label class="form-label">${cfg.label}</label><input class="form-input" id="si-text"></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="si-private"> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveSimpleItem('${pk}')">Save</button></div>`);
+}
+function saveSimpleItem(pk){
+  const val=document.getElementById('si-text').value.trim();if(!val){alert('Required.');return;}
+  const priv=document.getElementById('si-private').checked;
+  const field=pk==='diet'?'goal':'name';
+  updateUserData(u=>{if(!u[pk])u[pk]=[];u[pk].push({id:uid(),[field]:val,isArchived:false,isPrivate:priv});});
+  closeModal();renderSimplePanel(pk);
+}
+
+/* Book */
+function openAddBookModal(editId=null){
+  const user=getCurrentUserData(),ex=editId?(user.reading||[]).find(b=>b.id===editId):null;
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Book</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="bk-title" value="${ex?escAttr(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Author (optional)</label><input class="form-input" id="bk-author" value="${ex?escAttr(ex.author||''):''}"></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="bk-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveBook('${editId||''}')">Save</button></div>`);
+}
+function saveBook(editId){
+  const t=document.getElementById('bk-title').value.trim();if(!t){alert('Title required.');return;}
+  const a=document.getElementById('bk-author').value.trim(),p=document.getElementById('bk-private').checked;
+  updateUserData(u=>{if(!u.reading)u.reading=[];if(editId){const b=u.reading.find(b=>b.id===editId);if(b){b.title=t;b.author=a;b.isPrivate=p;}}else u.reading.push({id:uid(),title:t,author:a,isArchived:false,isPrivate:p});});
+  closeModal();renderSimplePanel('reading');
+}
+
+/* Movie */
+function openAddMovieModal(editId=null){
+  const user=getCurrentUserData(),ex=editId?(user.movies||[]).find(m=>m.id===editId):null;
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Movie</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="mv-title" value="${ex?escAttr(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Year (optional)</label><input class="form-input" id="mv-year" value="${ex?escAttr(ex.year||''):''}"></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="mv-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveMovie('${editId||''}')">Save</button></div>`);
+}
+function saveMovie(editId){
+  const t=document.getElementById('mv-title').value.trim();if(!t){alert('Title required.');return;}
+  const y=document.getElementById('mv-year').value.trim(),p=document.getElementById('mv-private').checked;
+  updateUserData(u=>{if(!u.movies)u.movies=[];if(editId){const m=u.movies.find(m=>m.id===editId);if(m){m.title=t;m.year=y;m.isPrivate=p;}}else u.movies.push({id:uid(),title:t,year:y,isArchived:false,isPrivate:p});});
+  closeModal();renderSimplePanel('movies');
+}
+
+/* Experience */
+function openAddExperienceModal(editId=null){
+  const user=getCurrentUserData(),ex=editId?(user.experiences||[]).find(e=>e.id===editId):null,today=new Date().toISOString().slice(0,10);
+  openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Experience</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="ex-title" value="${ex?escAttr(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Date (optional)</label><input class="form-input" id="ex-date" type="date" value="${ex&&ex.date?ex.date:today}"></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="ex-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveExperience('${editId||''}')">Save</button></div>`);
+}
+function saveExperience(editId){
+  const t=document.getElementById('ex-title').value.trim();if(!t){alert('Title required.');return;}
+  const dt=document.getElementById('ex-date').value||'',p=document.getElementById('ex-private').checked;
+  updateUserData(u=>{if(!u.experiences)u.experiences=[];if(editId){const e=u.experiences.find(e=>e.id===editId);if(e){e.title=t;e.date=dt;e.isPrivate=p;}}else u.experiences.push({id:uid(),title:t,date:dt,isArchived:false,isPrivate:p});});
+  closeModal();renderSimplePanel('experiences');
+}
+
+/* ============================================================
+   ACCOUNT & SETTINGS
+============================================================ */
+function openAccountModal(){
+  if(!currentUser)return;
+  openModal(null,`<div class="modal-title">Account</div>
+    <div class="form-group"><label class="form-label">Name</label>
+      <input class="form-input" id="acc-name" value="${escHtml(currentUser.name)}"></div>
+    <div class="form-group"><label class="form-label">Email</label>
+      <input class="form-input" id="acc-email" type="email" value="${escHtml(currentUser.email)}"></div>
+    <div class="form-group"><label class="form-label">New Password <span style="font-weight:400;text-transform:none;font-size:10px;color:var(--text-light);">(leave blank to keep current)</span></label>
+      <input class="form-input" id="acc-pw" type="password" placeholder="New password…"></div>
+    <div class="form-group"><label class="form-label">Confirm Password</label>
+      <input class="form-input" id="acc-pw2" type="password" placeholder="Confirm new password…"></div>
+    <div style="margin-bottom:12px;"><div class="form-label">Member ID</div>
+      <div style="font-size:11px;font-family:monospace;color:var(--text-light);">${currentUser.id}</div></div>
+    <div class="modal-actions" style="flex-wrap:wrap;gap:6px;">
+      <button class="btn btn-danger" onclick="if(confirm('Delete account and all data? This cannot be undone.'))deleteAccount()">Delete Account</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveAccount()">Save Changes</button>
+    </div>`);
+}
+
+function saveAccount(){
+  const name=document.getElementById('acc-name').value.trim();
+  const email=document.getElementById('acc-email').value.trim().toLowerCase();
+  const pw=document.getElementById('acc-pw').value;
+  const pw2=document.getElementById('acc-pw2').value;
+  if(!name||!email){alert('Name and email required.');return;}
+  if(pw&&pw!==pw2){alert('Passwords do not match.');return;}
+  if(pw&&pw.length<6){alert('Password must be at least 6 characters.');return;}
+  const users=getUsers();
+  const dup=users.find(u=>u.email===email&&u.id!==currentUser.id);
+  if(dup){alert('That email is already used by another account.');return;}
+  updateUserData(u=>{u.name=name;u.email=email;if(pw)u.password=pw;});
+  document.getElementById('header-user-name').textContent=name;
+  closeModal();alert('Account updated successfully.');
+}
+
+function openSettingsModal(){
+  const user=getCurrentUserData(),s=user.settings||{};
+  const allAuthors=[...new Set(QUOTES.map(q=>q.author))].sort();
+  const authorChecks=allAuthors.map(a=>`
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;">
+      <input type="checkbox" name="sq-author" value="${escHtml(a)}" ${(!s.quoteSources||!s.quoteSources.length||s.quoteSources.includes(a))?'checked':''}> ${escHtml(a)}
+    </label>`).join('');
+  const connList=(user.people||[]).filter(p=>p.connectionStatus==='accepted');
+  const pendList=(user.pendingInvites||[]);
+  openModal(null,`<div class="modal-title">Settings</div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;margin-top:4px;">App Settings</div>
+    <div class="form-group"><label class="form-label">Default View</label>
+      <select class="form-select" id="set-dv"><option value="public" ${(s.defaultView||'public')==='public'?'selected':''}>Public</option><option value="private" ${s.defaultView==='private'?'selected':''}>Private</option></select></div>
+    <div class="form-group"><label class="form-label">Goal Timeframe</label>
+      <select class="form-select" id="set-gt"><option value="daily" ${s.goalTimeframe==='daily'?'selected':''}>Daily</option><option value="weekly" ${s.goalTimeframe==='weekly'?'selected':''}>Weekly</option><option value="monthly" ${(s.goalTimeframe||'monthly')==='monthly'?'selected':''}>Monthly</option></select></div>
+    <div class="form-group"><label class="form-label">Quote Sources</label>
+      <div style="max-height:130px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;">${authorChecks}</div></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Connections</div>
+    <div style="font-size:12px;margin-bottom:8px;"><strong>Connected (${connList.length}):</strong> ${connList.length?connList.map(p=>`<span class="tag">${escHtml(p.name)}</span>`).join(' '):'<span style="color:var(--text-light);">None yet.</span>'}</div>
+    <div style="font-size:12px;margin-bottom:8px;"><strong>Pending invites (${pendList.length}):</strong> ${pendList.length?pendList.map(i=>`<span class="tag">${escHtml(i.name)} <span onclick="cancelInvite('${escHtml(i.email)}')" style="cursor:pointer;color:var(--danger);margin-left:2px;" title="Cancel invite">✕</span></span>`).join(' '):'<span style="color:var(--text-light);">None.</span>'}</div>
+    <button class="btn btn-sm" onclick="closeModal();openInviteModal()">+ Invite someone</button>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Data</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" onclick="exportUserData()">⬇ Download my data</button>
+      <label class="btn" style="cursor:pointer;">⬆ Restore from backup <input type="file" accept=".json" style="display:none;" onchange="importUserData(event)"></label>
+    </div>
+    ${currentUser.email==='admin@ideaindex.com'?`<div style="margin-top:10px;"><a href="admin.html" class="btn" style="background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;">🛡 Admin Panel</a></div>`:''}
+
+    <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveSettings()">Save Settings</button></div>`);
+}
+
+function saveSettings(){
+  const dv=document.getElementById('set-dv').value,gt=document.getElementById('set-gt').value;
+  const checked=Array.from(document.querySelectorAll('input[name="sq-author"]:checked')).map(e=>e.value);
+  const allA=[...new Set(QUOTES.map(q=>q.author))];
+  const qs=checked.length===allA.length?[]:checked;
+  updateUserData(u=>{u.settings={...(u.settings||{}),defaultView:dv,goalTimeframe:gt,quoteSources:qs};});
+  closeModal();renderTodayPanel();
+}
+
+function cancelInvite(email){
+  updateUserData(u=>{
+    u.pendingInvites=(u.pendingInvites||[]).filter(i=>i.email!==email);
+    const p=u.people.find(p=>p.email===email);
+    if(p&&p.connectionStatus==='invited')p.connectionStatus='none';
+  });
+  closeModal();openSettingsModal();
+}
+
+function deleteAccount(){saveUsers(getUsers().filter(u=>u.id!==currentUser.id));handleLogout();}
+
+/* DATA EXPORT / IMPORT */
+function exportUserData(){
+  const user=getCurrentUserData();
+  const blob=new Blob([JSON.stringify(user,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`ideaindex-backup-${user.name.replace(/\s+/g,'-')}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+function importUserData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.id||!data.email){alert('Invalid backup file — missing required fields.');return;}
+      if(!confirm(`Restore data for "${data.name}"? This will REPLACE your current data.`))return;
+      const users=getUsers();
+      const idx=users.findIndex(u=>u.id===currentUser.id);
+      if(idx>=0){users[idx]=data;saveUsers(users);currentUser=data;}
+      else{users.push(data);saveUsers(users);}
+      alert('Data restored successfully! Reloading…');
+      window.location.reload();
+    }catch{alert('Could not read backup file. Make sure it is a valid Idea Index JSON export.');}
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   MODAL SYSTEM
+============================================================ */
+function openModal(id,html){
+  if(id==='account-modal'){openAccountModal();return;}
+  if(id==='settings-modal'){openSettingsModal();return;}
+  document.getElementById('modal-container').innerHTML=`<div class="modal-overlay" onclick="handleOverlayClick(event)"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+function handleOverlayClick(e){if(e.target.classList.contains('modal-overlay'))closeModal();}
+
+/* ============================================================
+   CENTER — PROJECT DISPLAY
+============================================================ */
+function setPDView(n){
+  pdView=n;
+  [1,3,6,9].forEach(v=>{
+    const btn=document.getElementById('pd-btn-'+v);
+    if(btn)btn.className='pd-view-btn'+(v===n?' active':'');
+  });
+  renderProjectDisplay();
+}
+
+function setPDMode(mode){
+  pdMode=mode;
+  document.getElementById('pd-mode-display').className='pd-mode-btn'+(mode==='display'?' active':'');
+  document.getElementById('pd-mode-map').className='pd-mode-btn'+(mode==='map'?' active':'');
+  renderProjectDisplay();
+}
+
+function renderProjectDisplay(){
+  const el=document.getElementById('pd-content');if(!el)return;
+  if(pdMode==='map'){
+    el.innerHTML=`<div class="pd-map-placeholder">
+      <div style="font-size:36px;margin-bottom:12px;">🗺️</div>
+      <h3>Map View</h3>
+      <p>Coming soon. Will show project locations and connections using free OpenStreetMap tiles. Check back in a future update.</p>
+    </div>`;
+    return;
+  }
+  const user=getCurrentUserData();if(!user){el.innerHTML='';return;}
+  // Show all non-archived projects (MVP: creation order)
+  const projs=(user.activeProjects||[]).filter(p=>!p.isArchived).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  if(!projs.length){
+    el.innerHTML='<div class="empty-state" style="padding:32px 0;">No active projects yet. Add one in the left column.</div>';return;
+  }
+  const visible=projs.slice(0,pdView);
+  const grid=document.createElement('div');
+  grid.className=`pd-grid view-${pdView}`;
+  visible.forEach(p=>{
+    const goals=(user.goals||[]).filter(g=>!g.isArchived&&g.linkedProjectId===p.id);
+    const linkedGoal=goals[0]||null;
+    // Build 7 note lines
+    const notes=p.notesForDisplayPanel||[];
+    let linesHtml='';
+    for(let i=0;i<7;i++){
+      const line=notes[i]||'';
+      if(line){linesHtml+=`<div class="pd-notes-line" data-proj="${p.id}" data-line="${i}">${line}</div>`;}
+      else{linesHtml+=`<div class="pd-notes-line empty" data-proj="${p.id}" data-line="${i}">—</div>`;}
+    }
+    const square=document.createElement('div');
+    square.className='pd-square'+(pdView===1?' view-1':'');
+    square.innerHTML=`
+      <div class="pd-square-header">
+        <span class="pd-square-name" title="${escAttr(p.name)}">${escHtml(p.name)}</span>
+        <span class="pd-cat-badge">${escHtml(p.category)}</span>
+        ${p.isPrivate?'<span class="private-badge">priv</span>':''}
+        <button class="pd-edit-btn" onclick="openNotesEditorModal('${p.id}')">Edit</button>
+      </div>
+      <div class="pd-notes" id="pd-notes-${p.id}">${linesHtml}</div>
+      <div class="${linkedGoal?'pd-goal-link':'pd-goal-link disabled'}"
+           onclick="${linkedGoal?`scrollToGoal('${linkedGoal.id}')`:''}"
+           title="${linkedGoal?'Jump to linked goal':'No goal linked to this project'}">
+        🎯 ${linkedGoal?escHtml(linkedGoal.text.slice(0,42)):'No goal linked'}
+      </div>`;
+    grid.appendChild(square);
+  });
+  el.innerHTML='';el.appendChild(grid);
+  // Pagination hint if more exist
+  if(projs.length>pdView){
+    const hint=document.createElement('div');
+    hint.style.cssText='font-size:11px;color:var(--text-light);text-align:right;margin-top:6px;';
+    hint.textContent=`Showing ${pdView} of ${projs.length} projects. Increase view or archive projects to see others.`;
+    el.appendChild(hint);
+  }
+}
+
+function scrollToGoal(goalId){
+  // Highlight and scroll to goal in the goals panel
+  selectedGoalId=goalId;
+  renderGoalsPanel();
+  document.getElementById('goals-panel').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function openNotesEditorModal(projectId){
+  const user=getCurrentUserData();
+  const p=(user.activeProjects||[]).find(p=>p.id===projectId);if(!p)return;
+  // Convert notes array to HTML for contenteditable (join with line breaks)
+  const notes=p.notesForDisplayPanel||[];
+  // We store as an array of strings (may contain HTML). Display as div lines.
+  const editorContent=notes.length?notes.map(n=>n?`<div>${n}</div>`:'<div><br></div>').join(''):'<div><br></div>';
+
+  openModal(null,`
+    <div class="modal-title">Edit Notes — ${escHtml(p.name)}</div>
+    <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">Up to 7 lines. Supports bold, italic, links, and bullets.</div>
+    <div class="notes-toolbar">
+      <button onclick="notesCmd('bold')" title="Bold"><b>B</b></button>
+      <button onclick="notesCmd('italic')" title="Italic"><i>I</i></button>
+      <button onclick="notesInsertLink()" title="Link">🔗 Link</button>
+      <button onclick="notesCmd('insertUnorderedList')" title="Bullet list">• List</button>
+      <button onclick="notesClear()" title="Clear all" style="margin-left:auto;color:var(--danger);">Clear</button>
+    </div>
+    <div id="notes-editor" contenteditable="true">${editorContent}</div>
+    <div style="font-size:11px;color:var(--text-light);margin-top:6px;">Tip: Press Enter for a new line. Each line becomes one note.</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveNotesFromEditor('${projectId}')">Save Notes</button>
+    </div>`);
+  // Focus editor
+  setTimeout(()=>{ const ed=document.getElementById('notes-editor');if(ed)ed.focus(); },60);
+}
+
+function notesCmd(cmd){
+  document.getElementById('notes-editor').focus();
+  document.execCommand(cmd,false,null);
+}
+
+function notesInsertLink(){
+  const url=prompt('Enter URL:','https://');if(!url||url==='https://')return;
+  const text=prompt('Link text:','') ||url;
+  document.getElementById('notes-editor').focus();
+  document.execCommand('insertHTML',false,`<a href="${escAttr(url)}" target="_blank">${escHtml(text)}</a>`);
+}
+
+function notesClear(){
+  if(!confirm('Clear all notes?'))return;
+  document.getElementById('notes-editor').innerHTML='<div><br></div>';
+}
+
+function saveNotesFromEditor(projectId){
+  const ed=document.getElementById('notes-editor');if(!ed)return;
+  // Extract lines: each block-level child (div/p/li) = one note line
+  const lines=[];
+  ed.childNodes.forEach(node=>{
+    if(node.nodeType===Node.ELEMENT_NODE){
+      const text=(node.innerText||node.textContent||'').trim();
+      // Store innerHTML to preserve formatting/links, but only if non-empty
+      const html=(node.innerHTML||'').replace(/<br\s*\/?>/gi,'').trim();
+      if(html&&html!=='&nbsp;'&&text)lines.push(node.innerHTML);
+      else if(lines.length)lines.push(''); // preserve blank lines between content
+    } else if(node.nodeType===Node.TEXT_NODE&&node.textContent.trim()){
+      lines.push(node.textContent.trim());
+    }
+  });
+  // Trim trailing empty lines, keep max 7
+  while(lines.length&&!lines[lines.length-1])lines.pop();
+  const final=lines.slice(0,7);
+
+  updateUserData(u=>{const p=u.activeProjects.find(p=>p.id===projectId);if(p)p.notesForDisplayPanel=final;});
+  closeModal();renderProjectDisplay();renderProjectsPanel();
+}
+
+/* ============================================================
+   RIGHT — LIFE MANAGEMENT
+============================================================ */
+function renderLifeMgmtPanel(){
+  const user=getCurrentUserData();if(!user)return;
+  const allCats=[...LIFE_MGMT_CATEGORIES,...(user.customLifeCategories||[])];
+  const fe=document.getElementById('lifemgmt-filters');
+  fe.innerHTML='<div class="filter-label">Filter</div>';
+  allCats.forEach(cat=>{
+    const d=document.createElement('div');
+    d.className='filter-item'+(activeLifeFilters.includes(cat)?' active':'');
+    d.textContent=cat;d.onclick=()=>toggleLifeFilter(cat);fe.appendChild(d);
+  });
+  const an=document.createElement('div');an.className='filter-item add-new';an.textContent='+ Category';
+  an.onclick=addCustomLifeCategory;fe.appendChild(an);
+
+  let items=(user.lifeMgmt||[]).filter(i=>!i.isArchived&&isVisible(i));
+  if(activeLifeFilters.length)items=items.filter(i=>activeLifeFilters.includes(i.category));
+
+  const le=document.getElementById('lifemgmt-list');le.innerHTML='';
+  if(!items.length){le.innerHTML='<div class="empty-state">No activities yet.</div>';return;}
+  const cnt=lifeMgmtShowAll?items.length:Math.min(6,items.length);
+  for(let i=0;i<cnt;i++){
+    const item=items[i];
+    const d=document.createElement('div');
+    d.className='simple-list-item'+(selectedLifeItemId===item.id?' selected':'');
+    d.onclick=()=>openLifeItemDetailModal(item.id);
+    d.innerHTML=`<span class="item-text">${escHtml(item.activity)}</span>
+      <span class="item-cat">${escHtml(item.category)}</span>
+      ${item.isPrivate?'<span class="private-badge">priv</span>':''}`;
+    le.appendChild(d);
+  }
+  if(items.length>6){
+    const l=document.createElement('span');l.className='view-all-link';
+    l.textContent=lifeMgmtShowAll?'Show less':`View all (${items.length})`;
+    l.onclick=()=>{lifeMgmtShowAll=!lifeMgmtShowAll;renderLifeMgmtPanel();};le.appendChild(l);
+  }
+}
+
+function toggleLifeFilter(cat){
+  const i=activeLifeFilters.indexOf(cat);
+  if(i>=0)activeLifeFilters.splice(i,1);else activeLifeFilters.push(cat);
+  renderLifeMgmtPanel();
+}
+
+function addCustomLifeCategory(){
+  const n=prompt('New category name:');if(!n?.trim())return;
+  updateUserData(u=>{if(!u.customLifeCategories)u.customLifeCategories=[];if(!u.customLifeCategories.includes(n.trim()))u.customLifeCategories.push(n.trim());});
+  renderLifeMgmtPanel();
+}
+
+function toggleLifeMgmtViewAll(){lifeMgmtShowAll=!lifeMgmtShowAll;renderLifeMgmtPanel();}
+
+function openAddLifeItemModal(editId=null){
+  const user=getCurrentUserData();
+  const ex=editId?(user.lifeMgmt||[]).find(i=>i.id===editId):null;
+  const allCats=[...LIFE_MGMT_CATEGORIES,...(user.customLifeCategories||[])];
+  openModal(null,`
+    <div class="modal-title">${editId?'Edit':'Add'} Activity</div>
+    <div class="form-group"><label class="form-label">Activity</label>
+      <input class="form-input" id="lm-activity" value="${ex?escAttr(ex.activity):''}"></div>
+    <div class="form-group"><label class="form-label">Description (optional)</label>
+      <textarea class="form-textarea" id="lm-desc">${ex?escHtml(ex.description||''):''}</textarea></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-select" id="lm-cat">
+        ${allCats.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+    <label class="form-checkbox-row"><input type="checkbox" id="lm-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveLifeItem('${editId||''}')">Save</button>
+    </div>`);
+}
+
+function saveLifeItem(editId){
+  const activity=document.getElementById('lm-activity').value.trim();
+  if(!activity){alert('Activity name required.');return;}
+  const description=document.getElementById('lm-desc').value.trim();
+  const category=document.getElementById('lm-cat').value;
+  const isPrivate=document.getElementById('lm-private').checked;
+  updateUserData(u=>{
+    if(!u.lifeMgmt)u.lifeMgmt=[];
+    if(editId){
+      const it=u.lifeMgmt.find(i=>i.id===editId);
+      if(it){it.activity=activity;it.description=description;it.category=category;it.isPrivate=isPrivate;}
+    } else {
+      u.lifeMgmt.push({id:uid(),activity,description,category,isArchived:false,isPrivate});
+    }
+  });
+  closeModal();renderLifeMgmtPanel();
+}
+
+function openLifeItemDetailModal(itemId){
+  selectedLifeItemId=itemId;
+  const user=getCurrentUserData();
+  const item=(user.lifeMgmt||[]).find(i=>i.id===itemId);
+  if(!item)return;
+  openModal(null,`
+    <div class="modal-title">${escHtml(item.activity)}</div>
+    <div style="margin-bottom:10px;">
+      <span class="tag" style="font-size:11px;">${escHtml(item.category)}</span>
+      ${item.isPrivate?'<span class="private-badge" style="margin-left:4px;">private</span>':''}
+    </div>
+    ${item.description
+      ? `<div style="font-size:13px;color:var(--text);line-height:1.6;background:var(--surface2);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:14px;">${escHtml(item.description)}</div>`
+      : `<div style="font-size:12px;color:var(--text-light);font-style:italic;margin-bottom:14px;">No description.</div>`
+    }
+    <div class="modal-actions" style="flex-wrap:wrap;gap:6px;">
+      <button class="btn btn-danger" onclick="archiveLifeItem('${itemId}')">Archive</button>
+      <button class="btn" onclick="closeModal();openAddLifeItemModal('${itemId}')">Edit</button>
+      <button class="btn btn-accent" onclick="closeModal()">Close</button>
+    </div>`);
+}
+
+function archiveLifeItem(id){
+  if(!confirm('Archive this activity?'))return;
+  updateUserData(u=>{const it=(u.lifeMgmt||[]).find(i=>i.id===id);if(it)it.isArchived=true;});
+  selectedLifeItemId=null;closeModal();renderLifeMgmtPanel();
+}
+
+function archiveSelectedLifeItem(){
+  if(!selectedLifeItemId){alert('Click an activity first.');return;}
+  archiveLifeItem(selectedLifeItemId);
+}
+
+function openManageLifeItemsModal(){
+  const user=getCurrentUserData();
+  const act=(user.lifeMgmt||[]).filter(i=>!i.isArchived);
+  const arc=(user.lifeMgmt||[]).filter(i=>i.isArchived);
+  let h=`<div class="modal-title">Manage Activities</div>`;
+  if(!act.length)h+='<div class="empty-state">No activities.</div>';
+  act.forEach(it=>{
+    h+=`<div class="manage-list-item">
+      <div class="name">${escHtml(it.activity)}</div>
+      <span class="tag">${escHtml(it.category)}</span>
+      <button class="btn btn-sm" onclick="closeModal();openAddLifeItemModal('${it.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteLifeItem('${it.id}')">Del</button>
+    </div>`;
+  });
+  if(arc.length){
+    h+=`<div class="form-label" style="margin:10px 0 6px;">Archived</div>`;
+    arc.forEach(it=>{h+=`<div class="manage-list-item"><div class="name" style="color:var(--text-light)">${escHtml(it.activity)}</div><button class="btn btn-sm" onclick="restoreLifeItem('${it.id}')">Restore</button></div>`;});
+  }
+  h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;
+  openModal(null,h);
+}
+
+function deleteLifeItem(id){
+  if(!confirm('Permanently delete?'))return;
+  updateUserData(u=>{u.lifeMgmt=(u.lifeMgmt||[]).filter(i=>i.id!==id);});
+  closeModal();renderLifeMgmtPanel();
+}
+
+function restoreLifeItem(id){
+  updateUserData(u=>{const it=(u.lifeMgmt||[]).find(i=>i.id===id);if(it)it.isArchived=false;});
+  closeModal();openManageLifeItemsModal();renderLifeMgmtPanel();
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+window.addEventListener('DOMContentLoaded',()=>{
+  // Migrate existing users to include new arrays if missing
+  const users=getUsers();let dirty=false;
+  users.forEach(u=>{
+    ['goals','fitness','reading','movies','experiences','diet','lifeMgmt'].forEach(k=>{if(!u[k]){u[k]=[];dirty=true;}});
+    if(!u.favoriteIdeas){u.favoriteIdeas=[];dirty=true;}
+    if(!u.favoritePeople){u.favoritePeople=[];dirty=true;}
+    if(!u.transcript){u.transcript={values:'',mission:'',jobInterests:'',skillInterests:[],education:[],jobHistory:[],skillHistory:[],portfolio:[],sectionPrivacy:{}};dirty=true;}
+    if(!u.settings){u.settings={};dirty=true;}
+    if(!u.settings.quoteSources){u.settings.quoteSources=[];dirty=true;}
+    if(!('primaryGoalId' in u.settings)){u.settings.primaryGoalId=null;dirty=true;}
+    if(!u.settings.goalTimeframe){u.settings.goalTimeframe='monthly';dirty=true;}
+  });
+  if(dirty)saveUsers(users);
+
+  // Auth screen is visible by default (CSS). If already logged in, hide it and show app.
+  tryAutoLogin();
+});
+</script>
+</body>
+</html>

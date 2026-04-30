@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace — Idea Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0ede8;--surface:#faf9f7;--surface2:#f3f0eb;--border:#e2ddd6;
+  --text:#1a1714;--text-muted:#7a7470;--text-light:#a09a94;
+  --accent:#2d5016;--accent-light:#4a7a28;--accent-bg:#e8f0e0;
+  --danger:#8b2020;--danger-bg:#f5e0e0;--gold:#a07830;--gold-bg:#fef9ec;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07);--shadow:0 4px 16px rgba(0,0,0,0.09);
+  --radius:12px;--radius-sm:6px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --tr:0.16s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+
+/* HEADER */
+#mkt-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+.back-link{font-size:12px;color:var(--text-muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);text-decoration:none;transition:all var(--tr);}
+.back-link:hover{background:var(--border);}
+.page-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--accent);}
+.page-subtitle{font-size:12px;color:var(--text-light);margin-top:1px;}
+.header-spacer{flex:1;}
+.nav-pill{font-size:12px;padding:4px 12px;border:1px solid var(--border);border-radius:16px;cursor:pointer;background:var(--surface2);color:var(--text-muted);text-decoration:none;transition:all var(--tr);}
+.nav-pill:hover,.nav-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* LAYOUT */
+#mkt-layout{display:grid;grid-template-columns:220px 1fr;gap:0;max-width:1100px;margin:0 auto;padding:20px;gap:16px;}
+
+/* SIDEBAR */
+.mkt-sidebar{display:flex;flex-direction:column;gap:12px;}
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);}
+.sidebar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);margin-bottom:10px;}
+.filter-item{font-size:12px;color:var(--text-muted);padding:4px 8px;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:all var(--tr);user-select:none;display:flex;align-items:center;gap:6px;}
+.filter-item:hover{background:var(--surface2);color:var(--text);}
+.filter-item.active{background:var(--accent-bg);color:var(--accent);border-color:#c0d8a0;font-weight:500;}
+.filter-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sidebar-sep{border:none;border-top:1px solid var(--border);margin:8px 0;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font-body);color:var(--text);background:var(--surface);outline:none;transition:border-color var(--tr);}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:vertical;min-height:70px;}
+.price-range{display:flex;gap:6px;align-items:center;}
+.price-range input{width:70px;}
+.checkbox-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none;margin-top:6px;}
+.checkbox-row input{accent-color:var(--accent);}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 11px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--tr);font-family:var(--font-body);white-space:nowrap;}
+.btn:hover{background:var(--border);}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-accent:hover{background:var(--accent-light);}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;}
+.btn-sm{padding:3px 8px;font-size:11px;}
+.btn-full{width:100%;}
+
+/* FEED */
+.mkt-feed{display:flex;flex-direction:column;gap:14px;}
+.feed-top{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.feed-count{font-size:13px;color:var(--text-muted);}
+
+/* LISTING CARD */
+.listing-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow var(--tr);}
+.listing-card:hover{box-shadow:var(--shadow);}
+.listing-card.own-listing{border-left:3px solid var(--accent);}
+.listing-imgs{display:flex;gap:4px;overflow-x:auto;padding:10px 12px 0;}
+.listing-img{width:100px;height:80px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;cursor:zoom-in;}
+.listing-body{padding:12px 14px;}
+.listing-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.listing-type-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0;white-space:nowrap;}
+.listing-title{font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--text);flex:1;}
+.listing-price{font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap;}
+.listing-price.free{color:var(--accent-light);}
+.listing-meta{font-size:11px;color:var(--text-light);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.listing-desc{font-size:13px;color:var(--text-muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.listing-actions{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;}
+.action-btn{background:none;border:1px solid transparent;color:var(--text-muted);font-size:11px;padding:3px 8px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);font-weight:500;transition:all var(--tr);}
+.action-btn:hover{background:var(--border);color:var(--text);}
+.action-btn.contact{color:var(--accent-light);border-color:#c0d8a0;background:var(--accent-bg);}
+.action-btn.danger:hover{color:var(--danger);}
+.listing-unavail{opacity:0.55;}
+
+/* EMPTY */
+.feed-empty{text-align:center;padding:60px 24px;color:var(--text-light);background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);}
+.feed-empty h2{font-family:var(--font-display);font-size:20px;color:var(--text-muted);margin-bottom:8px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:24px;min-width:340px;max-width:560px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);max-height:92vh;overflow-y:auto;}
+.modal-title{font-family:var(--font-display);font-size:17px;font-weight:600;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.form-group{margin-bottom:11px;}
+.img-thumb-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.img-thumb{width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid var(--border);}
+
+/* TYPE COLOR MAP */
+.type-sale{background:#d4edda;color:#155724;}
+.type-buy{background:#cce5ff;color:#004085;}
+.type-svc-offer{background:#e2d9f3;color:#4a235a;}
+.type-svc-need{background:#fff3cd;color:#856404;}
+.type-job-open{background:var(--accent-bg);color:var(--accent);}
+.type-job-want{background:#d1ecf1;color:#0c5460;}
+.type-housing-avail{background:#ffeeba;color:#856404;}
+.type-housing-want{background:#f8d7da;color:#721c24;}
+.type-friend{background:#e8f0e0;color:#2d5016;}
+.type-dating{background:#fce4ec;color:#880e4f;}
+.type-custom{background:var(--surface2);color:var(--text-muted);}
+
+@media(max-width:700px){
+  #mkt-layout{grid-template-columns:1fr;}
+  .mkt-sidebar{flex-direction:row;flex-wrap:wrap;}
+  .sidebar-card{flex:1;min-width:180px;}
+}
+</style>
+</head>
+<body>
+
+<header id="mkt-header">
+  <a class="back-link" href="index.html">← Dashboard</a>
+  <div>
+    <div class="page-title">Marketplace</div>
+    <div class="page-subtitle">Classifieds for your connections</div>
+  </div>
+  <div class="header-spacer"></div>
+  <a class="nav-pill active" href="market.html">Marketplace</a>
+  <a class="nav-pill" href="shared.html">Shared Resources</a>
+</header>
+
+<div id="mkt-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="mkt-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">Post Type</div>
+      <div class="filter-item active" data-type="" onclick="setTypeFilter('',this)">
+        <span class="dot" style="background:var(--text-light)"></span> All types
+      </div>
+      <div class="filter-item" data-type="For Sale" onclick="setTypeFilter('For Sale',this)">
+        <span class="dot" style="background:#28a745"></span> For Sale
+      </div>
+      <div class="filter-item" data-type="Want to Buy" onclick="setTypeFilter('Want to Buy',this)">
+        <span class="dot" style="background:#007bff"></span> Want to Buy
+      </div>
+      <div class="filter-item" data-type="Service Offered" onclick="setTypeFilter('Service Offered',this)">
+        <span class="dot" style="background:#7b2fbe"></span> Service Offered
+      </div>
+      <div class="filter-item" data-type="Service Needed" onclick="setTypeFilter('Service Needed',this)">
+        <span class="dot" style="background:#ffc107"></span> Service Needed
+      </div>
+      <div class="filter-item" data-type="Job Opening" onclick="setTypeFilter('Job Opening',this)">
+        <span class="dot" style="background:#2d5016"></span> Job Opening
+      </div>
+      <div class="filter-item" data-type="Job Desired" onclick="setTypeFilter('Job Desired',this)">
+        <span class="dot" style="background:#17a2b8"></span> Job Desired
+      </div>
+      <div class="filter-item" data-type="Housing Available" onclick="setTypeFilter('Housing Available',this)">
+        <span class="dot" style="background:#fd7e14"></span> Housing Available
+      </div>
+      <div class="filter-item" data-type="Housing Wanted" onclick="setTypeFilter('Housing Wanted',this)">
+        <span class="dot" style="background:#dc3545"></span> Housing Wanted
+      </div>
+      <div class="filter-item" data-type="Friendship" onclick="setTypeFilter('Friendship',this)">
+        <span class="dot" style="background:#4a7a28"></span> Friendship
+      </div>
+      <div class="filter-item" data-type="Dating" onclick="setTypeFilter('Dating',this)">
+        <span class="dot" style="background:#e91e8c"></span> Dating
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Price</div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="filter-free" onchange="renderFeed()"> Free only
+      </label>
+      <div style="margin-top:10px;">
+        <div class="form-label">Price range</div>
+        <div class="price-range">
+          <input class="form-input" type="number" id="price-min" placeholder="Min" min="0" onchange="renderFeed()">
+          <span style="color:var(--text-light);font-size:12px;">–</span>
+          <input class="form-input" type="number" id="price-max" placeholder="Max" min="0" onchange="renderFeed()">
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Show</div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="filter-available" onchange="renderFeed()" checked> Available only
+      </label>
+      <label class="checkbox-row" style="margin-top:6px;">
+        <input type="checkbox" id="filter-mine" onchange="renderFeed()"> My posts only
+      </label>
+    </div>
+  </aside>
+
+  <!-- MAIN FEED -->
+  <div>
+    <div class="feed-top">
+      <button class="btn btn-accent" onclick="openPostModal()">+ New Listing</button>
+      <span class="feed-count" id="feed-count"></span>
+    </div>
+    <div class="mkt-feed" id="mkt-feed">
+      <div class="feed-empty"><h2>Loading…</h2></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="modal-container"></div>
+
+<script>
+/* ─── DEBOUNCE ─── */
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);};}
+
+const USERS_KEY   = 'ideaIndex_users';
+const SESSION_KEY = 'ideaIndex_session';
+const MKT_KEY     = 'ideaIndex_market';
+const ABUSE_KEY   = 'ideaIndex_abuse';
+
+let currentUser = null;
+let activeTypeFilter = '';
+let expandedListings = new Set();
+
+const POST_TYPES = ['For Sale','Want to Buy','Service Offered','Service Needed',
+  'Job Opening','Job Desired','Housing Available','Housing Wanted','Friendship','Dating'];
+
+const TYPE_CLASS = {
+  'For Sale':'type-sale','Want to Buy':'type-buy','Service Offered':'type-svc-offer',
+  'Service Needed':'type-svc-need','Job Opening':'type-job-open','Job Desired':'type-job-want',
+  'Housing Available':'type-housing-avail','Housing Wanted':'type-housing-want',
+  'Friendship':'type-friend','Dating':'type-dating'
+};
+
+function getUsers(){ try{return JSON.parse(localStorage.getItem(USERS_KEY))||[];}catch{return[];} }
+function saveUsers(u){ localStorage.setItem(USERS_KEY,JSON.stringify(u)); }
+function getListings(){ try{return JSON.parse(localStorage.getItem(MKT_KEY))||[];}catch{return[];} }
+function saveListings(l){ try{localStorage.setItem(MKT_KEY,JSON.stringify(l));}catch(e){console.error('Storage error:',e);alert('Storage full — export your data.');} }
+function getAbuse(){ try{return JSON.parse(localStorage.getItem(ABUSE_KEY))||[];}catch{return[];} }
+function saveAbuse(a){ try{localStorage.setItem(ABUSE_KEY,JSON.stringify(a));}catch(e){console.error('Storage error:',e);} }
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function timeAgo(ts){
+  const d=(Date.now()-new Date(ts).getTime())/1000;
+  if(d<60)return 'just now'; if(d<3600)return Math.floor(d/60)+'m ago';
+  if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago';
+}
+
+/* ─── INIT ─── */
+function initPage(){
+  const sid=sessionStorage.getItem(SESSION_KEY);
+  if(!sid){window.location.href='index.html';return;}
+  const u=getUsers().find(u=>u.id===sid);
+  if(!u){window.location.href='index.html';return;}
+  currentUser=u;
+  renderFeed();
+}
+
+/* ─── FILTER ─── */
+function setTypeFilter(type, el){
+  activeTypeFilter=type;
+  document.querySelectorAll('.filter-item[data-type]').forEach(f=>f.classList.remove('active'));
+  el.classList.add('active');
+  renderFeed();
+}
+
+/* ─── VISIBLE LISTINGS ─── */
+function visibleListings(){
+  const connectedIds=new Set((currentUser.people||[])
+    .filter(p=>p.connectionStatus==='accepted').map(p=>p.id));
+  connectedIds.add(currentUser.id);
+
+  const freeOnly   = document.getElementById('filter-free')?.checked;
+  const availOnly  = document.getElementById('filter-available')?.checked;
+  const mineOnly   = document.getElementById('filter-mine')?.checked;
+  const priceMin   = parseFloat(document.getElementById('price-min')?.value)||0;
+  const priceMax   = parseFloat(document.getElementById('price-max')?.value)||Infinity;
+
+  return getListings().filter(l=>{
+    if(l.isArchived) return false;
+    if(!connectedIds.has(l.userId)) return false;
+    if(mineOnly && l.userId!==currentUser.id) return false;
+    if(activeTypeFilter && l.type!==activeTypeFilter) return false;
+    if(availOnly && !l.isAvailable) return false;
+    if(freeOnly && l.price!=='Free' && parseFloat(l.price||0)>0) return false;
+    if(l.price!=='Free'){
+      const p=parseFloat(l.price||0);
+      if(p<priceMin||p>priceMax) return false;
+    }
+    return true;
+  }).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+}
+
+/* ─── RENDER FEED ─── */
+function renderFeed(){
+  const listings=visibleListings();
+  const feed=document.getElementById('mkt-feed');
+  const countEl=document.getElementById('feed-count');
+  countEl.textContent=`${listings.length} listing${listings.length!==1?'s':''}`;
+
+  if(!listings.length){
+    feed.innerHTML=`<div class="feed-empty">
+      <div style="font-size:36px;margin-bottom:10px;">🏪</div>
+      <h2>No listings yet</h2>
+      <p style="font-size:13px;max-width:280px;margin:0 auto;">Post a listing or adjust filters. Only listings from your connections appear here.</p>
+    </div>`;
+    return;
+  }
+  feed.innerHTML='';
+  listings.forEach(l=>feed.appendChild(buildCard(l)));
+}
+
+/* ─── BUILD CARD ─── */
+function buildCard(l){
+  const allUsers=getUsers();
+  const creator=allUsers.find(u=>u.id===l.userId);
+  const isOwner=l.userId===currentUser.id;
+  const expanded=expandedListings.has(l.id);
+  const typeClass=TYPE_CLASS[l.type]||'type-custom';
+  const priceStr=l.price==='Free'?'Free':(l.price?`$${parseFloat(l.price).toLocaleString()}`:'—');
+  const isFree=l.price==='Free'||!l.price;
+
+  const card=document.createElement('div');
+  card.className='listing-card'+(isOwner?' own-listing':'')+(l.isAvailable?'':' listing-unavail');
+  card.id='listing-'+l.id;
+
+  const imgs=l.images||[];
+  const imgsHtml=imgs.length?`<div class="listing-imgs">${imgs.map(src=>`<img class="listing-img" src="${src}" alt="" onclick="openImgZoom('${escA(src)}')">`).join('')}</div>`:'';
+
+  const desc=l.description||'';
+  const isLong=desc.length>180;
+  const descHtml=isLong&&!expanded
+    ?`<div class="listing-desc">${escH(desc.slice(0,180))}…</div><span style="font-size:11px;color:var(--accent-light);cursor:pointer;" onclick="toggleExpand('${l.id}')">Read more ↓</span>`
+    :`<div class="listing-desc" style="${expanded?'-webkit-line-clamp:unset;':''}">${escH(desc)}</div>${isLong?`<span style="font-size:11px;color:var(--accent-light);cursor:pointer;" onclick="toggleExpand('${l.id}')">Show less ↑</span>`:''}`;
+
+  card.innerHTML=`
+    ${imgsHtml}
+    <div class="listing-body">
+      <div class="listing-header">
+        <span class="listing-type-badge ${typeClass}">${escH(l.type)}</span>
+        <span class="listing-title">${escH(l.title)}</span>
+        <span class="listing-price ${isFree?'free':''}">${escH(priceStr)}</span>
+      </div>
+      <div class="listing-meta">
+        <span>👤 ${escH(creator?.name||'Unknown')}</span>
+        ${l.location?`<span>📍 ${escH(l.location)}</span>`:''}
+        <span>${timeAgo(l.createdAt)}</span>
+        ${!l.isAvailable?'<span style="color:var(--danger);font-weight:600;">UNAVAILABLE</span>':''}
+        ${isOwner?'<span style="color:var(--accent);font-weight:600;">Your listing</span>':''}
+      </div>
+      ${descHtml}
+    </div>
+    <div class="listing-actions">
+      ${!isOwner?`<button class="action-btn contact" onclick="contactListing('${l.id}')">💬 Contact</button>`:''}
+      ${isOwner?`
+        <button class="action-btn" onclick="openPostModal('${l.id}')">✏️ Edit</button>
+        <button class="action-btn" onclick="toggleAvailable('${l.id}')">${l.isAvailable?'Mark Unavailable':'Mark Available'}</button>
+        <button class="action-btn danger" onclick="archiveListing('${l.id}')">Archive</button>
+      `:''}
+      <button class="action-btn" style="margin-left:auto;color:var(--text-light);" onclick="reportListing('${l.id}')">Report</button>
+    </div>`;
+  return card;
+}
+
+function toggleExpand(id){
+  if(expandedListings.has(id))expandedListings.delete(id);else expandedListings.add(id);
+  renderFeed();
+}
+
+function toggleAvailable(id){
+  const listings=getListings();
+  const l=listings.find(l=>l.id===id);
+  if(l)l.isAvailable=!l.isAvailable;
+  saveListings(listings);renderFeed();
+}
+
+function archiveListing(id){
+  if(!confirm('Archive this listing?'))return;
+  const listings=getListings();
+  const l=listings.find(l=>l.id===id);
+  if(l)l.isArchived=true;
+  saveListings(listings);renderFeed();
+}
+
+function contactListing(id){
+  const listings=getListings();
+  const l=listings.find(l=>l.id===id);
+  const creator=getUsers().find(u=>u.id===l?.userId);
+  if(!creator)return;
+  openModal(`<div class="modal-title">Contact ${escH(creator.name)}</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Regarding: <strong>${escH(l.title)}</strong></p>
+    <p style="font-size:13px;margin-bottom:8px;">📧 <a href="mailto:${escA(creator.email)}" style="color:var(--accent);">${escH(creator.email)}</a></p>
+    <p style="font-size:12px;color:var(--text-light);">In-app messaging is coming in a future update.</p>
+    <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+function openImgZoom(src){
+  openModal(`<div style="text-align:center;">
+    <img src="${escA(src)}" style="max-width:100%;max-height:70vh;border-radius:var(--radius-sm);">
+  </div>
+  <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+function reportListing(id){
+  openModal(`<div class="modal-title">Report Listing</div>
+    <div class="form-group"><label class="form-label">Reason</label>
+      <select class="form-select" id="rep-reason">
+        <option>Spam</option><option>Offensive</option><option>Misleading</option><option>Other</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Notes (optional)</label>
+      <textarea class="form-textarea" id="rep-notes"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="submitReport('${id}')">Submit</button>
+    </div>`);
+}
+
+function submitReport(id){
+  const r=getAbuse();
+  r.push({id:uid(),listingId:id,reporterId:currentUser.id,reason:document.getElementById('rep-reason').value,notes:document.getElementById('rep-notes').value.trim(),createdAt:new Date().toISOString()});
+  saveAbuse(r);closeModal();alert('Report submitted. Thank you.');
+}
+
+/* ─── POST / EDIT MODAL ─── */
+let pendingImgs=[]; // base64 array for new listing
+
+function openPostModal(editId=null){
+  const listings=getListings();
+  const ex=editId?listings.find(l=>l.id===editId):null;
+  pendingImgs=ex?(ex.images||[]):[];
+
+  const typeOpts=POST_TYPES.map(t=>`<option value="${t}" ${ex&&ex.type===t?'selected':''}>${t}</option>`).join('');
+  const thumbsHtml=pendingImgs.map((src,i)=>`<img class="img-thumb" src="${src}" title="Click to remove" onclick="removeImg(${i})">`).join('');
+
+  openModal(`<div class="modal-title">${editId?'Edit Listing':'+ New Listing'}</div>
+    <div class="form-group"><label class="form-label">Type</label>
+      <select class="form-select" id="pl-type">
+        ${typeOpts}
+        <option value="__custom__">+ Custom type…</option>
+      </select></div>
+    <div id="pl-custom-row" style="display:none;margin-bottom:10px;">
+      <input class="form-input" id="pl-custom-type" placeholder="Custom type name"></div>
+    <div class="form-group"><label class="form-label">Title *</label>
+      <input class="form-input" id="pl-title" value="${ex?escA(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Description *</label>
+      <textarea class="form-textarea" id="pl-desc">${ex?escH(ex.description||''):''}</textarea></div>
+    <div class="form-group"><label class="form-label">Price (enter "Free" or a number)</label>
+      <input class="form-input" id="pl-price" value="${ex?escA(String(ex.price||'')):''}"></div>
+    <div class="form-group"><label class="form-label">Location</label>
+      <input class="form-input" id="pl-loc" value="${ex?escA(ex.location||''):''}"></div>
+    <div class="form-group"><label class="form-label">Images (multiple allowed, ~400KB each)</label>
+      <input type="file" accept="image/*" multiple onchange="previewListingImgs(this)">
+      <div class="img-thumb-row" id="img-thumb-row">${thumbsHtml}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="submitListing('${editId||''}')">
+        ${editId?'Save Changes':'Post Listing'}
+      </button>
+    </div>`);
+
+  document.getElementById('pl-type').addEventListener('change',function(){
+    document.getElementById('pl-custom-row').style.display=this.value==='__custom__'?'':'none';
+  });
+}
+
+function previewListingImgs(input){
+  const files=Array.from(input.files);
+  files.forEach(file=>{
+    if(file.size>500000){alert(`${file.name} is too large. Use images under ~400KB.`);return;}
+    const reader=new FileReader();
+    reader.onload=e=>{
+      pendingImgs.push(e.target.result);
+      refreshImgThumbs();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeImg(idx){
+  pendingImgs.splice(idx,1);refreshImgThumbs();
+}
+
+function refreshImgThumbs(){
+  const row=document.getElementById('img-thumb-row');
+  if(!row)return;
+  row.innerHTML=pendingImgs.map((src,i)=>`<img class="img-thumb" src="${src}" title="Click to remove" onclick="removeImg(${i})" style="cursor:pointer;">`).join('');
+}
+
+function submitListing(editId){
+  const title=document.getElementById('pl-title').value.trim();
+  const desc =document.getElementById('pl-desc').value.trim();
+  if(!title||!desc){alert('Title and description required.');return;}
+
+  let type=document.getElementById('pl-type').value;
+  if(type==='__custom__'){
+    type=document.getElementById('pl-custom-type')?.value.trim();
+    if(!type){alert('Enter a custom type name.');return;}
+  }
+  const price=document.getElementById('pl-price').value.trim()||'Free';
+  const loc  =document.getElementById('pl-loc').value.trim();
+
+  const listings=getListings();
+  if(editId){
+    const l=listings.find(l=>l.id===editId);
+    if(!l)return;
+    l.title=title;l.description=desc;l.type=type;l.price=price;l.location=loc;l.images=pendingImgs;
+  } else {
+    listings.unshift({
+      id:uid(),userId:currentUser.id,type,title,description:desc,
+      price,location:loc,images:pendingImgs,isAvailable:true,
+      isArchived:false,createdAt:new Date().toISOString()
+    });
+  }
+  saveListings(listings);closeModal();renderFeed();
+}
+
+/* ─── MODAL ─── */
+function openModal(html){
+  document.getElementById('modal-container').innerHTML=
+    `<div class="modal-overlay" onclick="handleOverlayClick(event)"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+function handleOverlayClick(e){if(e.target.classList.contains('modal-overlay'))closeModal();}
+
+window.addEventListener('DOMContentLoaded',initPage);
+</script>
+</body>
+</html>

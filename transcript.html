@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universal Transcript — Idea Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0ede8;--surface:#faf9f7;--surface2:#f3f0eb;--border:#e2ddd6;
+  --text:#1a1714;--text-muted:#7a7470;--text-light:#a09a94;
+  --accent:#2d5016;--accent-light:#4a7a28;--accent-bg:#e8f0e0;
+  --danger:#8b2020;--danger-bg:#f5e0e0;--gold:#a07830;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07);--shadow:0 4px 16px rgba(0,0,0,0.09);
+  --radius:12px;--radius-sm:6px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --tr:0.16s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+
+/* HEADER */
+#tr-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+.back-link{font-size:12px;color:var(--text-muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);text-decoration:none;transition:all var(--tr);}
+.back-link:hover{background:var(--border);}
+.tr-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--accent);}
+.tr-subtitle{font-size:13px;color:var(--text-muted);font-weight:400;}
+.header-spacer{flex:1;}
+.filter-pills{display:flex;gap:6px;}
+.filter-pill{padding:4px 12px;border:1px solid var(--border);border-radius:16px;font-size:12px;font-weight:500;cursor:pointer;background:var(--surface2);color:var(--text-muted);transition:all var(--tr);}
+.filter-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.print-btn{font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-family:var(--font-body);}
+.print-btn:hover{background:var(--border);}
+
+/* LAYOUT */
+#tr-body{max-width:780px;margin:0 auto;padding:24px 20px;display:flex;flex-direction:column;gap:16px;}
+
+/* PROFILE CARD */
+.profile-hero{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:24px;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow-sm);}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--accent);flex-shrink:0;}
+.profile-info h1{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);}
+.profile-info p{font-size:13px;color:var(--text-muted);margin-top:2px;}
+
+/* SECTION CARDS */
+.tr-section{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow-sm);transition:box-shadow var(--tr);}
+.tr-section:hover{box-shadow:var(--shadow);}
+.tr-section.hidden{display:none;}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.section-icon{font-size:16px;flex-shrink:0;}
+.section-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--text);flex:1;}
+.section-private{font-size:10px;padding:1px 6px;background:#fef9ec;border:1px solid #e8d88c;color:#786020;border-radius:4px;font-weight:700;}
+.edit-btn{font-size:11px;padding:3px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-family:var(--font-body);color:var(--text-muted);transition:all var(--tr);}
+.edit-btn:hover{background:var(--border);color:var(--text);}
+.section-empty{color:var(--text-light);font-size:13px;font-style:italic;}
+.section-text{font-size:13px;color:var(--text);line-height:1.7;}
+.section-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.section-list li{font-size:13px;color:var(--text);padding:8px 10px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+.entry-title{font-weight:600;color:var(--text);margin-bottom:2px;}
+.entry-meta{font-size:11px;color:var(--text-light);margin-bottom:3px;}
+.entry-desc{font-size:12px;color:var(--text-muted);line-height:1.5;}
+.skill-row{display:flex;flex-wrap:wrap;gap:6px;}
+.skill-chip{padding:4px 12px;background:var(--accent-bg);border:1px solid #c0d8a0;border-radius:20px;font-size:12px;color:var(--accent);font-weight:500;}
+.skill-chip.interest{background:var(--surface2);border-color:var(--border);color:var(--text-muted);}
+.idea-link{color:var(--accent);font-size:13px;text-decoration:none;display:flex;align-items:center;gap:4px;}
+.idea-link:hover{text-decoration:underline;}
+.portfolio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.portfolio-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.portfolio-img{width:100%;height:100px;object-fit:cover;display:block;}
+.portfolio-img-placeholder{width:100%;height:100px;background:var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:24px;}
+.portfolio-info{padding:8px 10px;}
+.portfolio-info a{font-size:12px;color:var(--accent);font-weight:600;text-decoration:none;}
+.portfolio-info a:hover{text-decoration:underline;}
+.portfolio-info p{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.goal-item{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+.goal-cat{font-size:10px;padding:1px 6px;background:var(--accent-bg);border:1px solid #c0d8a0;color:var(--accent);border-radius:10px;font-weight:600;white-space:nowrap;flex-shrink:0;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:24px;min-width:340px;max-width:560px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);max-height:92vh;overflow-y:auto;}
+.modal-title{font-family:var(--font-display);font-size:17px;font-weight:600;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 11px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--tr);font-family:var(--font-body);}
+.btn:hover{background:var(--border);}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-accent:hover{background:var(--accent-light);}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;}
+.btn-sm{padding:3px 8px;font-size:11px;}
+.form-group{margin-bottom:11px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);color:var(--text);background:var(--surface);outline:none;transition:border-color var(--tr);}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:vertical;min-height:70px;}
+.subentry{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px;position:relative;}
+.subentry-remove{position:absolute;top:6px;right:6px;font-size:11px;cursor:pointer;color:var(--danger);background:none;border:none;font-family:var(--font-body);}
+
+@media print{
+  #tr-header{display:none;}
+  .edit-btn{display:none;}
+  body{background:#fff;}
+  .tr-section,.profile-hero{box-shadow:none;border:1px solid #ccc;}
+}
+@media(max-width:640px){
+  #tr-body{padding:12px;}
+  .profile-hero{flex-direction:column;text-align:center;}
+  .filter-pills{flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+<header id="tr-header">
+  <a class="back-link" href="index.html">← Dashboard</a>
+  <div>
+    <div class="tr-title">Universal Transcript</div>
+    <div class="tr-subtitle" id="tr-viewing-label">Loading…</div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="filter-pills">
+    <span class="filter-pill active" onclick="setFilter('all',this)">All</span>
+    <span class="filter-pill" onclick="setFilter('resume',this)">Resume</span>
+    <span class="filter-pill" onclick="setFilter('recent',this)">Recent</span>
+  </div>
+  <button class="print-btn" onclick="window.print()">🖨 Print / PDF</button>
+</header>
+
+<div id="tr-body">
+  <div style="text-align:center;padding:40px;color:var(--text-light);">Loading transcript…</div>
+</div>
+<div id="modal-container"></div>
+
+<script>
+const USERS_KEY   = 'ideaIndex_users';
+const SESSION_KEY = 'ideaIndex_session';
+const IDEAS_KEY   = 'ideaIndex_ideas';
+
+let currentUser = null;
+let subjectUser = null;  // user whose transcript is shown
+let isOwner     = false;
+let activeFilter= 'all';
+
+function getUsers(){ try{return JSON.parse(localStorage.getItem(USERS_KEY))||[];}catch{return[];} }
+function saveUsers(u){ localStorage.setItem(USERS_KEY,JSON.stringify(u)); }
+function getIdeas(){ try{return JSON.parse(localStorage.getItem(IDEAS_KEY))||[];}catch{return[];} }
+function getCurrentUserData(){ return getUsers().find(u=>u.id===currentUser?.id)||null; }
+function updateSubjectData(fn){
+  const us=getUsers(); const i=us.findIndex(u=>u.id===subjectUser.id);
+  if(i<0)return; fn(us[i]); saveUsers(us);
+  subjectUser=us[i]; if(isOwner) currentUser=us[i];
+}
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ─── INIT ─── */
+function initPage(){
+  const sid = sessionStorage.getItem(SESSION_KEY);
+  if(!sid){ window.location.href='index.html'; return; }
+  const cu = getUsers().find(u=>u.id===sid);
+  if(!cu){ window.location.href='index.html'; return; }
+  currentUser = cu;
+
+  const params = new URLSearchParams(window.location.search);
+  const uid2   = params.get('userId');
+  const all    = getUsers();
+  subjectUser  = uid2 ? all.find(u=>u.id===uid2)||cu : cu;
+  isOwner      = subjectUser.id === currentUser.id;
+
+  // Migrate transcript fields
+  updateSubjectData(u=>{
+    if(!u.transcript) u.transcript={};
+    const t=u.transcript;
+    if(!t.values)         t.values='';
+    if(!t.mission)        t.mission='';
+    if(!t.jobInterests)   t.jobInterests='';
+    if(!t.skillInterests) t.skillInterests=[];
+    if(!t.education)      t.education=[];
+    if(!t.jobHistory)     t.jobHistory=[];
+    if(!t.skillHistory)   t.skillHistory=[];
+    if(!t.portfolio)      t.portfolio=[];
+    if(!t.sectionPrivacy) t.sectionPrivacy={};
+  });
+
+  document.getElementById('tr-viewing-label').textContent = isOwner ? 'Your transcript' : `${subjectUser.name}'s transcript`;
+  renderTranscript();
+}
+
+/* ─── FILTER ─── */
+function setFilter(f, el){
+  activeFilter=f;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderTranscript();
+}
+
+/* ─── SECTION VISIBILITY ─── */
+const RESUME_SECTIONS = new Set(['education','jobHistory','skillHistory','goals','ideas','portfolio']);
+
+function isSectionVisible(key){
+  if(activeFilter==='resume' && !RESUME_SECTIONS.has(key)) return false;
+  const priv = (subjectUser.transcript?.sectionPrivacy||{})[key];
+  if(priv && !isOwner) return false;
+  return true;
+}
+
+/* ─── RENDER ─── */
+function renderTranscript(){
+  const t   = subjectUser.transcript||{};
+  const body= document.getElementById('tr-body');
+  body.innerHTML='';
+
+  // Profile hero
+  const initials = subjectUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const hero = `<div class="profile-hero">
+    <div class="profile-avatar">${escH(initials)}</div>
+    <div class="profile-info">
+      <h1>${escH(subjectUser.name)}</h1>
+      <p>${escH(subjectUser.email)}${t.mission?` · ${escH(t.mission.slice(0,60))}…`:''}</p>
+    </div>
+  </div>`;
+  body.innerHTML=hero;
+
+  const sections=[
+    {key:'values',      icon:'💎', title:'Values',         render:renderValues},
+    {key:'goals',       icon:'🎯', title:'Goals',           render:renderGoals},
+    {key:'mission',     icon:'🧭', title:'Personal Mission',render:renderMission},
+    {key:'education',   icon:'🎓', title:'Education',       render:renderEducation},
+    {key:'jobHistory',  icon:'💼', title:'Job History',     render:renderJobHistory},
+    {key:'jobInterests',icon:'🔍', title:'Job Interests',   render:renderJobInterests},
+    {key:'skillHistory',icon:'⚡', title:'Skills',          render:renderSkillHistory},
+    {key:'skillInterests',icon:'🌱',title:'Skill Interests',render:renderSkillInterests},
+    {key:'ideas',       icon:'💡', title:'Ideas',           render:renderIdeas},
+    {key:'portfolio',   icon:'🖼', title:'Portfolio',       render:renderPortfolio},
+  ];
+
+  if(activeFilter==='recent'){
+    // For "recent" mode, sort sections that have content first
+    sections.sort((a,b)=>{
+      const aHas=sectionHasContent(a.key)?0:1;
+      const bHas=sectionHasContent(b.key)?0:1;
+      return aHas-bHas;
+    });
+  }
+
+  sections.forEach(s=>{
+    if(!isSectionVisible(s.key)) return;
+    const card=document.createElement('div');
+    card.className='tr-section';
+    card.id='section-'+s.key;
+    const priv=(t.sectionPrivacy||{})[s.key];
+    card.innerHTML=`<div class="section-header">
+      <span class="section-icon">${s.icon}</span>
+      <span class="section-title">${s.title}</span>
+      ${priv?'<span class="section-private">🔒 Private</span>':''}
+      ${isOwner?`<button class="edit-btn" onclick="editSection('${s.key}')">Edit</button>
+        <button class="edit-btn" onclick="toggleSectionPrivacy('${s.key}')" title="${priv?'Make public':'Make private'}">${priv?'🔓':'🔒'}</button>`:''}
+    </div>
+    <div id="section-content-${s.key}">${s.render(t,subjectUser)}</div>`;
+    body.appendChild(card);
+  });
+}
+
+function sectionHasContent(key){
+  const t=subjectUser.transcript||{};
+  if(key==='goals') return (subjectUser.goals||[]).filter(g=>!g.isArchived).length>0;
+  if(key==='ideas') return getIdeas().filter(i=>i.userId===subjectUser.id&&i.isPublic&&!i.isArchived).length>0;
+  const val=t[key];
+  if(!val) return false;
+  if(Array.isArray(val)) return val.length>0;
+  return String(val).trim().length>0;
+}
+
+/* ─── SECTION RENDERERS ─── */
+function renderValues(t){
+  return t.values
+    ? `<p class="section-text">${escH(t.values)}</p>`
+    : '<p class="section-empty">No values written yet.</p>';
+}
+
+function renderGoals(t,u){
+  const goals=(u.goals||[]).filter(g=>!g.isArchived);
+  if(!goals.length) return '<p class="section-empty">No goals added yet.</p>';
+  return goals.map(g=>`<div class="goal-item"><span class="goal-cat">${escH(g.category)}</span><span style="font-size:13px;">${escH(g.text)}</span></div>`).join('');
+}
+
+function renderMission(t){
+  return t.mission
+    ? `<p class="section-text">${escH(t.mission)}</p>`
+    : '<p class="section-empty">No personal mission written yet.</p>';
+}
+
+function renderEducation(t){
+  if(!t.education?.length) return '<p class="section-empty">No education history added.</p>';
+  return '<ul class="section-list">'+t.education.map(e=>`<li>
+    <div class="entry-title">${escH(e.institution)}</div>
+    <div class="entry-meta">${escH(e.degree)}${e.year?' · '+escH(e.year):''}</div>
+    ${e.description?`<div class="entry-desc">${escH(e.description)}</div>`:''}
+  </li>`).join('')+'</ul>';
+}
+
+function renderJobHistory(t){
+  if(!t.jobHistory?.length) return '<p class="section-empty">No job history added.</p>';
+  return '<ul class="section-list">'+t.jobHistory.map(j=>`<li>
+    <div class="entry-title">${escH(j.title)} @ ${escH(j.company)}</div>
+    <div class="entry-meta">${escH(j.dates||'')}</div>
+    ${j.description?`<div class="entry-desc">${escH(j.description)}</div>`:''}
+  </li>`).join('')+'</ul>';
+}
+
+function renderJobInterests(t){
+  return t.jobInterests
+    ? `<p class="section-text">${escH(t.jobInterests)}</p>`
+    : '<p class="section-empty">No job interests written yet.</p>';
+}
+
+function renderSkillHistory(t){
+  if(!t.skillHistory?.length) return '<p class="section-empty">No skills added.</p>';
+  return `<div class="skill-row">${t.skillHistory.map(s=>`<span class="skill-chip">${escH(s.name)}${s.level?' · '+escH(s.level):''}</span>`).join('')}</div>`;
+}
+
+function renderSkillInterests(t){
+  if(!t.skillInterests?.length) return '<p class="section-empty">No skill interests added.</p>';
+  return `<div class="skill-row">${t.skillInterests.map(s=>`<span class="skill-chip interest">🌱 ${escH(s)}</span>`).join('')}</div>`;
+}
+
+function renderIdeas(t,u){
+  const ideas=getIdeas().filter(i=>i.userId===u.id&&i.isPublic&&!i.isArchived);
+  if(!ideas.length) return '<p class="section-empty">No public ideas posted yet.</p>';
+  return ideas.slice(0,8).map(i=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);">
+    <a class="idea-link" href="ideas.html">💡 ${escH(i.title)}</a>
+    <span style="font-size:11px;color:var(--text-light);margin-left:8px;">${escH(i.category)}</span>
+  </div>`).join('');
+}
+
+function renderPortfolio(t){
+  if(!t.portfolio?.length) return '<p class="section-empty">No portfolio items added.</p>';
+  return `<div class="portfolio-grid">${t.portfolio.map(p=>`<div class="portfolio-item">
+    ${p.imageBase64
+      ?`<img class="portfolio-img" src="${p.imageBase64}" alt="${escH(p.title)}">`
+      :`<div class="portfolio-img-placeholder">🖼</div>`}
+    <div class="portfolio-info">
+      ${p.url?`<a href="${escA(p.url)}" target="_blank">${escH(p.title)}</a>`:`<strong style="font-size:12px;">${escH(p.title)}</strong>`}
+      ${p.description?`<p>${escH(p.description.slice(0,80))}</p>`:''}
+    </div>
+  </div>`).join('')}</div>`;
+}
+
+/* ─── SECTION PRIVACY TOGGLE ─── */
+function toggleSectionPrivacy(key){
+  updateSubjectData(u=>{
+    if(!u.transcript.sectionPrivacy) u.transcript.sectionPrivacy={};
+    u.transcript.sectionPrivacy[key]=!u.transcript.sectionPrivacy[key];
+  });
+  renderTranscript();
+}
+
+/* ─── EDIT SECTION ─── */
+function editSection(key){
+  const t=subjectUser.transcript||{};
+  if(key==='values')     openTextEditor('values','💎 Values','Share what you value most in life and work.',t.values||'');
+  else if(key==='mission') openTextEditor('mission','🧭 Personal Mission','Write your personal mission statement.',t.mission||'');
+  else if(key==='jobInterests') openTextEditor('jobInterests','🔍 Job Interests','Describe roles, industries, and opportunities you\'re interested in.',t.jobInterests||'');
+  else if(key==='education') openArrayEditor('education','🎓 Education',t.education||[],['institution','degree','year','description'],['Institution','Degree / Field','Year','Description']);
+  else if(key==='jobHistory') openArrayEditor('jobHistory','💼 Job History',t.jobHistory||[],['company','title','dates','description'],['Company','Job Title','Dates (e.g. 2020–2023)','Description']);
+  else if(key==='skillHistory') openSkillEditor('skillHistory','⚡ Skills',t.skillHistory||[]);
+  else if(key==='skillInterests') openTagEditor('skillInterests','🌱 Skill Interests',t.skillInterests||[]);
+  else if(key==='portfolio') openPortfolioEditor(t.portfolio||[]);
+  else if(key==='goals') { alert('Edit goals from the main dashboard Goals panel.'); }
+  else if(key==='ideas') { alert('Post and manage ideas from the Ideas page.'); }
+}
+
+/* ─── TEXT EDITOR ─── */
+function openTextEditor(field, title, hint, current){
+  openModal(`<div class="modal-title">${title}</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">${escH(hint)}</p>
+    <div class="form-group"><textarea class="form-textarea" id="te-val" style="min-height:120px;">${escH(current)}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveTextField('${field}')">Save</button>
+    </div>`);
+}
+
+function saveTextField(field){
+  const val=document.getElementById('te-val').value.trim();
+  updateSubjectData(u=>{ if(!u.transcript)u.transcript={}; u.transcript[field]=val; });
+  closeModal(); renderTranscript();
+}
+
+/* ─── ARRAY EDITOR (education / job history) ─── */
+function openArrayEditor(field, title, items, keys, labels){
+  let h=`<div class="modal-title">${title}</div><div id="ae-items">`;
+  items.forEach((item,i)=>{ h+=buildSubEntry(i,keys,labels,item); });
+  h+=`</div>
+    <button class="btn" style="margin-top:6px;" onclick="addSubEntry('${field}','${JSON.stringify(keys).replace(/"/g,'&quot;')}','${JSON.stringify(labels).replace(/"/g,'&quot;')}')">+ Add entry</button>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveArrayField('${field}','${JSON.stringify(keys).replace(/"/g,'&quot;')}')">Save All</button>
+    </div>`;
+  openModal(h);
+}
+
+function buildSubEntry(idx,keys,labels,item={}){
+  let h=`<div class="subentry" id="ae-entry-${idx}">
+    <button class="subentry-remove" onclick="this.parentElement.remove()">✕</button>`;
+  keys.forEach((k,j)=>{
+    h+=`<div class="form-group" style="margin-bottom:6px;"><label class="form-label">${escH(labels[j])}</label>
+      <input class="form-input" data-key="${k}" value="${escA(item[k]||'')}"></div>`;
+  });
+  h+=`</div>`;
+  return h;
+}
+
+function addSubEntry(field, keysJson, labelsJson){
+  const keys=JSON.parse(keysJson), labels=JSON.parse(labelsJson);
+  const container=document.getElementById('ae-items');
+  const div=document.createElement('div');
+  div.innerHTML=buildSubEntry(Date.now(),keys,labels,{});
+  container.appendChild(div.firstElementChild);
+}
+
+function saveArrayField(field, keysJson){
+  const keys=JSON.parse(keysJson);
+  const entries=Array.from(document.querySelectorAll('#ae-items .subentry')).map(entry=>{
+    const obj={};
+    keys.forEach(k=>{ const inp=entry.querySelector(`[data-key="${k}"]`); if(inp)obj[k]=inp.value.trim(); });
+    return obj;
+  }).filter(obj=>Object.values(obj).some(v=>v));
+  updateSubjectData(u=>{ if(!u.transcript)u.transcript={}; u.transcript[field]=entries; });
+  closeModal(); renderTranscript();
+}
+
+/* ─── SKILL EDITOR ─── */
+function openSkillEditor(field, title, items){
+  let h=`<div class="modal-title">${title}</div>
+    <div id="skill-items">`;
+  items.forEach((s,i)=>{
+    h+=`<div class="subentry" id="skill-${i}">
+      <button class="subentry-remove" onclick="this.parentElement.remove()">✕</button>
+      <div style="display:flex;gap:8px;">
+        <div class="form-group" style="flex:2;margin-bottom:0;"><label class="form-label">Skill</label><input class="form-input" data-sk="name" value="${escA(s.name||'')}"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label class="form-label">Level</label>
+          <select class="form-select" data-sk="level">
+            ${['Beginner','Intermediate','Advanced','Expert'].map(l=>`<option ${s.level===l?'selected':''}>${l}</option>`).join('')}
+          </select></div>
+      </div>
+    </div>`;
+  });
+  h+=`</div>
+    <button class="btn" style="margin-top:6px;" onclick="addSkillEntry()">+ Add skill</button>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveSkillField()">Save</button>
+    </div>`;
+  openModal(h);
+}
+
+function addSkillEntry(){
+  const c=document.getElementById('skill-items');
+  const div=document.createElement('div');
+  div.innerHTML=`<div class="subentry">
+    <button class="subentry-remove" onclick="this.parentElement.remove()">✕</button>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:2;margin-bottom:0;"><label class="form-label">Skill</label><input class="form-input" data-sk="name"></div>
+      <div class="form-group" style="flex:1;margin-bottom:0;"><label class="form-label">Level</label>
+        <select class="form-select" data-sk="level">${['Beginner','Intermediate','Advanced','Expert'].map(l=>`<option>${l}</option>`).join('')}</select></div>
+    </div>
+  </div>`;
+  c.appendChild(div.firstElementChild);
+}
+
+function saveSkillField(){
+  const items=Array.from(document.querySelectorAll('#skill-items .subentry')).map(e=>({
+    name: e.querySelector('[data-sk="name"]')?.value.trim()||'',
+    level: e.querySelector('[data-sk="level"]')?.value||'Beginner'
+  })).filter(s=>s.name);
+  updateSubjectData(u=>{ if(!u.transcript)u.transcript={}; u.transcript.skillHistory=items; });
+  closeModal(); renderTranscript();
+}
+
+/* ─── TAG EDITOR (skill interests) ─── */
+function openTagEditor(field, title, items){
+  openModal(`<div class="modal-title">${title}</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Enter one skill per line.</p>
+    <div class="form-group"><textarea class="form-textarea" id="tag-val" style="min-height:100px;">${items.map(escH).join('\n')}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveTagField('${field}')">Save</button>
+    </div>`);
+}
+
+function saveTagField(field){
+  const tags=document.getElementById('tag-val').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  updateSubjectData(u=>{ if(!u.transcript)u.transcript={}; u.transcript[field]=tags; });
+  closeModal(); renderTranscript();
+}
+
+/* ─── PORTFOLIO EDITOR ─── */
+function openPortfolioEditor(items){
+  let h=`<div class="modal-title">🖼 Portfolio</div><div id="port-items">`;
+  items.forEach((p,i)=>{
+    h+=`<div class="subentry" id="port-${i}">
+      <button class="subentry-remove" onclick="this.parentElement.remove()">✕</button>
+      <div class="form-group"><label class="form-label">Title</label><input class="form-input" data-pf="title" value="${escA(p.title||'')}"></div>
+      <div class="form-group"><label class="form-label">URL (optional)</label><input class="form-input" data-pf="url" value="${escA(p.url||'')}"></div>
+      <div class="form-group"><label class="form-label">Description</label><input class="form-input" data-pf="description" value="${escA(p.description||'')}"></div>
+      <div class="form-group"><label class="form-label">Image</label><input type="file" accept="image/*" onchange="portfolioImgPreview(this,${i})">
+        ${p.imageBase64?`<img src="${p.imageBase64}" style="width:100%;max-height:80px;object-fit:cover;margin-top:4px;border-radius:4px;" data-pf-img>`:'<span data-pf-img></span>'}
+      </div>
+    </div>`;
+  });
+  h+=`</div>
+    <button class="btn" style="margin-top:6px;" onclick="addPortfolioEntry()">+ Add item</button>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="savePortfolio()">Save</button>
+    </div>`;
+  openModal(h);
+}
+
+function portfolioImgPreview(input, idx){
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const el=input.nextElementSibling;
+    if(el){ el.src=e.target.result; el.style.cssText='width:100%;max-height:80px;object-fit:cover;margin-top:4px;border-radius:4px;display:block;'; el.tagName==='SPAN'&&(el.outerHTML=`<img src="${e.target.result}" style="width:100%;max-height:80px;object-fit:cover;margin-top:4px;border-radius:4px;" data-pf-img>`); }
+    input._imgData=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addPortfolioEntry(){
+  const c=document.getElementById('port-items');
+  const div=document.createElement('div');
+  div.innerHTML=`<div class="subentry">
+    <button class="subentry-remove" onclick="this.parentElement.remove()">✕</button>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" data-pf="title"></div>
+    <div class="form-group"><label class="form-label">URL</label><input class="form-input" data-pf="url"></div>
+    <div class="form-group"><label class="form-label">Description</label><input class="form-input" data-pf="description"></div>
+    <div class="form-group"><label class="form-label">Image</label><input type="file" accept="image/*" onchange="portfolioImgPreview(this,-1)"><span data-pf-img></span></div>
+  </div>`;
+  c.appendChild(div.firstElementChild);
+}
+
+function savePortfolio(){
+  const entries=Array.from(document.querySelectorAll('#port-items .subentry')).map(e=>{
+    const fileInput=e.querySelector('input[type="file"]');
+    return {
+      title: e.querySelector('[data-pf="title"]')?.value.trim()||'',
+      url:   e.querySelector('[data-pf="url"]')?.value.trim()||'',
+      description: e.querySelector('[data-pf="description"]')?.value.trim()||'',
+      imageBase64: fileInput?._imgData || (e.querySelector('[data-pf-img]')?.src?.startsWith('data:')?e.querySelector('[data-pf-img]').src:null)
+    };
+  }).filter(p=>p.title);
+  updateSubjectData(u=>{ if(!u.transcript)u.transcript={}; u.transcript.portfolio=entries; });
+  closeModal(); renderTranscript();
+}
+
+/* ─── MODAL ─── */
+function openModal(html){
+  document.getElementById('modal-container').innerHTML=
+    `<div class="modal-overlay" onclick="handleOverlayClick(event)"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){ document.getElementById('modal-container').innerHTML=''; }
+function handleOverlayClick(e){ if(e.target.classList.contains('modal-overlay'))closeModal(); }
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

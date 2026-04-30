@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shared Resources — Idea Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0ede8;--surface:#faf9f7;--surface2:#f3f0eb;--border:#e2ddd6;
+  --text:#1a1714;--text-muted:#7a7470;--text-light:#a09a94;
+  --accent:#2d5016;--accent-light:#4a7a28;--accent-bg:#e8f0e0;
+  --danger:#8b2020;--danger-bg:#f5e0e0;--gold:#a07830;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07);--shadow:0 4px 16px rgba(0,0,0,0.09);
+  --radius:12px;--radius-sm:6px;
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --tr:0.16s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:var(--font-body);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;}
+
+#sr-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+.back-link{font-size:12px;color:var(--text-muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);text-decoration:none;transition:all var(--tr);}
+.back-link:hover{background:var(--border);}
+.page-title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--accent);}
+.page-subtitle{font-size:12px;color:var(--text-light);margin-top:1px;}
+.header-spacer{flex:1;}
+.nav-pill{font-size:12px;padding:4px 12px;border:1px solid var(--border);border-radius:16px;cursor:pointer;background:var(--surface2);color:var(--text-muted);text-decoration:none;transition:all var(--tr);}
+.nav-pill:hover,.nav-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+#sr-layout{display:grid;grid-template-columns:200px 1fr;gap:16px;max-width:1060px;margin:0 auto;padding:20px;}
+
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);}
+.sidebar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-light);margin-bottom:10px;}
+.filter-item{font-size:12px;color:var(--text-muted);padding:4px 8px;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:all var(--tr);user-select:none;display:flex;align-items:center;gap:6px;}
+.filter-item:hover{background:var(--surface2);color:var(--text);}
+.filter-item.active{background:var(--accent-bg);color:var(--accent);border-color:#c0d8a0;font-weight:500;}
+.cat-icon{font-size:13px;flex-shrink:0;}
+
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 11px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;transition:all var(--tr);font-family:var(--font-body);white-space:nowrap;}
+.btn:hover{background:var(--border);}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-accent:hover{background:var(--accent-light);}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;}
+.btn-sm{padding:3px 8px;font-size:11px;}
+
+.feed-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.feed-count{font-size:13px;color:var(--text-muted);}
+.sr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+
+/* RESOURCE CARD */
+.res-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow var(--tr);display:flex;flex-direction:column;}
+.res-card:hover{box-shadow:var(--shadow);}
+.res-card.own-res{border-left:3px solid var(--accent);}
+.res-card.unavailable{opacity:0.6;}
+.res-img{width:100%;height:120px;object-fit:cover;display:block;}
+.res-img-placeholder{width:100%;height:80px;background:linear-gradient(135deg,var(--surface2),var(--border));display:flex;align-items:center;justify-content:center;font-size:32px;}
+.res-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:6px;}
+.res-header{display:flex;align-items:flex-start;gap:8px;}
+.res-cat-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;background:var(--accent-bg);color:var(--accent);border:1px solid #c0d8a0;flex-shrink:0;white-space:nowrap;}
+.res-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text);line-height:1.3;}
+.res-meta{font-size:11px;color:var(--text-light);display:flex;gap:6px;flex-wrap:wrap;}
+.res-desc{font-size:12px;color:var(--text-muted);line-height:1.5;flex:1;}
+.avail-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.avail-badge.available{background:#d4edda;color:#155724;}
+.avail-badge.borrowed{background:#fff3cd;color:#856404;}
+.res-actions{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--surface2);}
+.action-btn{background:none;border:1px solid transparent;color:var(--text-muted);font-size:11px;padding:3px 8px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);font-weight:500;transition:all var(--tr);}
+.action-btn:hover{background:var(--border);color:var(--text);}
+.action-btn.borrow{color:var(--accent);border-color:#c0d8a0;background:var(--accent-bg);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,0.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);padding:16px;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:24px;min-width:340px;max-width:540px;width:100%;box-shadow:var(--shadow);border:1px solid var(--border);max-height:92vh;overflow-y:auto;}
+.modal-title{font-family:var(--font-display);font-size:17px;font-weight:600;margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.form-group{margin-bottom:11px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px;}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);color:var(--text);background:var(--surface);outline:none;transition:border-color var(--tr);}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:vertical;min-height:70px;}
+.img-thumb-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.img-thumb{width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:pointer;}
+
+.feed-empty{text-align:center;padding:60px 24px;color:var(--text-light);background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);}
+.feed-empty h2{font-family:var(--font-display);font-size:20px;color:var(--text-muted);margin-bottom:8px;}
+
+@media(max-width:640px){
+  #sr-layout{grid-template-columns:1fr;}
+  .sr-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header id="sr-header">
+  <a class="back-link" href="index.html">← Dashboard</a>
+  <div>
+    <div class="page-title">Shared Resources</div>
+    <div class="page-subtitle">Free lending and sharing within your network</div>
+  </div>
+  <div class="header-spacer"></div>
+  <a class="nav-pill" href="market.html">Marketplace</a>
+  <a class="nav-pill active" href="shared.html">Shared Resources</a>
+</header>
+
+<div id="sr-layout">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Category</div>
+      <div class="filter-item active" data-cat="" onclick="setCatFilter('',this)">
+        <span class="cat-icon">📦</span> All
+      </div>
+      <div class="filter-item" data-cat="Tools" onclick="setCatFilter('Tools',this)">
+        <span class="cat-icon">🔧</span> Tools
+      </div>
+      <div class="filter-item" data-cat="Spaces" onclick="setCatFilter('Spaces',this)">
+        <span class="cat-icon">🏠</span> Spaces
+      </div>
+      <div class="filter-item" data-cat="Skills" onclick="setCatFilter('Skills',this)">
+        <span class="cat-icon">🧠</span> Skills
+      </div>
+      <div class="filter-item" data-cat="Vehicles" onclick="setCatFilter('Vehicles',this)">
+        <span class="cat-icon">🚗</span> Vehicles
+      </div>
+      <div class="filter-item" data-cat="Books" onclick="setCatFilter('Books',this)">
+        <span class="cat-icon">📚</span> Books
+      </div>
+      <div class="filter-item" data-cat="Electronics" onclick="setCatFilter('Electronics',this)">
+        <span class="cat-icon">💻</span> Electronics
+      </div>
+      <div class="filter-item" data-cat="Other" onclick="setCatFilter('Other',this)">
+        <span class="cat-icon">✨</span> Other
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:8px 0;">
+      <div class="filter-item" data-cat="__avail__" onclick="setCatFilter('__avail__',this)">
+        <span class="cat-icon">✅</span> Available only
+      </div>
+      <div class="filter-item" data-cat="__mine__" onclick="setCatFilter('__mine__',this)">
+        <span class="cat-icon">👤</span> My resources
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div>
+    <div class="feed-top">
+      <button class="btn btn-accent" onclick="openPostModal()">+ Share a Resource</button>
+      <span class="feed-count" id="sr-count"></span>
+    </div>
+    <div class="sr-grid" id="sr-grid">
+      <div class="feed-empty"><h2>Loading…</h2></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="modal-container"></div>
+
+<script>
+/* ─── DEBOUNCE ─── */
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);};}
+
+const USERS_KEY   = 'ideaIndex_users';
+const SESSION_KEY = 'ideaIndex_session';
+const SR_KEY      = 'ideaIndex_shared';
+const ABUSE_KEY   = 'ideaIndex_abuse';
+
+let currentUser = null;
+let activeCatFilter = '';
+let pendingImgs = [];
+
+const SR_CATEGORIES = ['Tools','Spaces','Skills','Vehicles','Books','Electronics','Other'];
+const CAT_ICONS = {Tools:'🔧',Spaces:'🏠',Skills:'🧠',Vehicles:'🚗',Books:'📚',Electronics:'💻',Other:'✨'};
+
+function getUsers(){ try{return JSON.parse(localStorage.getItem(USERS_KEY))||[];}catch{return[];} }
+function saveUsers(u){ localStorage.setItem(USERS_KEY,JSON.stringify(u)); }
+function getResources(){ try{return JSON.parse(localStorage.getItem(SR_KEY))||[];}catch{return[];} }
+function saveResources(r){ try{localStorage.setItem(SR_KEY,JSON.stringify(r));}catch(e){console.error('Storage error:',e);alert('Storage full — export your data.');} }
+function getAbuse(){ try{return JSON.parse(localStorage.getItem(ABUSE_KEY))||[];}catch{return[];} }
+function saveAbuse(a){ try{localStorage.setItem(ABUSE_KEY,JSON.stringify(a));}catch(e){console.error('Storage error:',e);} }
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escA(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function timeAgo(ts){
+  const d=(Date.now()-new Date(ts).getTime())/1000;
+  if(d<60)return 'just now';if(d<3600)return Math.floor(d/60)+'m ago';
+  if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago';
+}
+
+function initPage(){
+  const sid=sessionStorage.getItem(SESSION_KEY);
+  if(!sid){window.location.href='index.html';return;}
+  const u=getUsers().find(u=>u.id===sid);
+  if(!u){window.location.href='index.html';return;}
+  currentUser=u;
+  renderGrid();
+}
+
+function setCatFilter(cat,el){
+  activeCatFilter=cat;
+  document.querySelectorAll('.filter-item[data-cat]').forEach(f=>f.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function visibleResources(){
+  const connectedIds=new Set((currentUser.people||[])
+    .filter(p=>p.connectionStatus==='accepted').map(p=>p.id));
+  connectedIds.add(currentUser.id);
+
+  return getResources().filter(r=>{
+    if(r.isArchived) return false;
+    if(!connectedIds.has(r.userId)) return false;
+    if(activeCatFilter==='__avail__') return r.availability==='available';
+    if(activeCatFilter==='__mine__') return r.userId===currentUser.id;
+    if(activeCatFilter && r.category!==activeCatFilter) return false;
+    return true;
+  }).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+}
+
+function renderGrid(){
+  const resources=visibleResources();
+  const grid=document.getElementById('sr-grid');
+  const countEl=document.getElementById('sr-count');
+  countEl.textContent=`${resources.length} resource${resources.length!==1?'s':''}`;
+
+  if(!resources.length){
+    grid.innerHTML=`<div class="feed-empty" style="grid-column:1/-1;">
+      <div style="font-size:36px;margin-bottom:10px;">🤝</div>
+      <h2>Nothing shared yet</h2>
+      <p style="font-size:13px;max-width:280px;margin:0 auto;">Share tools, spaces, skills, or anything your connections might find useful — all for free.</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML='';
+  resources.forEach(r=>grid.appendChild(buildCard(r)));
+}
+
+function buildCard(r){
+  const allUsers=getUsers();
+  const creator=allUsers.find(u=>u.id===r.userId);
+  const isOwner=r.userId===currentUser.id;
+  const icon=CAT_ICONS[r.category]||'✨';
+  const isAvail=r.availability==='available';
+  const imgs=r.images||[];
+
+  const card=document.createElement('div');
+  card.className='res-card'+(isOwner?' own-res':'')+(isAvail?'':' unavailable');
+  card.id='res-'+r.id;
+
+  card.innerHTML=`
+    ${imgs.length
+      ?`<img class="res-img" src="${imgs[0]}" alt="${escH(r.title)}" onclick="openImgZoom('${escA(imgs[0])}')" style="cursor:zoom-in;">`
+      :`<div class="res-img-placeholder">${icon}</div>`}
+    <div class="res-body">
+      <div class="res-header">
+        <span class="res-cat-badge">${icon} ${escH(r.category)}</span>
+        <span class="res-title">${escH(r.title)}</span>
+      </div>
+      <div class="res-meta">
+        <span>👤 ${escH(creator?.name||'Unknown')}</span>
+        ${r.location?`<span>📍 ${escH(r.location)}</span>`:''}
+        <span>${timeAgo(r.createdAt)}</span>
+        <span class="avail-badge ${isAvail?'available':'borrowed'}">${isAvail?'Available':'Borrowed'}</span>
+        ${isOwner?'<span style="color:var(--accent);font-weight:600;font-size:10px;">Yours</span>':''}
+      </div>
+      ${r.description?`<div class="res-desc">${escH(r.description)}</div>`:''}
+    </div>
+    <div class="res-actions">
+      ${!isOwner&&isAvail?`<button class="action-btn borrow" onclick="requestBorrow('${r.id}')">🤝 Request to Borrow</button>`:''}
+      ${isOwner?`
+        <button class="action-btn" onclick="openPostModal('${r.id}')">✏️ Edit</button>
+        <button class="action-btn" onclick="toggleAvailability('${r.id}')">${isAvail?'Mark Borrowed':'Mark Available'}</button>
+        <button class="action-btn" onclick="archiveResource('${r.id}')">Archive</button>
+      `:''}
+      <button class="action-btn" style="margin-left:auto;color:var(--text-light);" onclick="reportResource('${r.id}')">Report</button>
+    </div>`;
+  return card;
+}
+
+function requestBorrow(id){
+  const resources=getResources();
+  const r=resources.find(r=>r.id===id);
+  const creator=getUsers().find(u=>u.id===r?.userId);
+  if(!creator)return;
+  openModal(`<div class="modal-title">Request to Borrow</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">
+      You'd like to borrow <strong>${escH(r.title)}</strong> from <strong>${escH(creator.name)}</strong>.
+    </p>
+    <p style="font-size:13px;margin-bottom:8px;">📧 Contact them at: <a href="mailto:${escA(creator.email)}" style="color:var(--accent);">${escH(creator.email)}</a></p>
+    <p style="font-size:12px;color:var(--text-light);">In-app messaging is coming in a future update.</p>
+    <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`);
+}
+
+function toggleAvailability(id){
+  const resources=getResources();
+  const r=resources.find(r=>r.id===id);
+  if(r) r.availability=r.availability==='available'?'borrowed':'available';
+  saveResources(resources);renderGrid();
+}
+
+function archiveResource(id){
+  if(!confirm('Archive this resource?'))return;
+  const resources=getResources();
+  const r=resources.find(r=>r.id===id);
+  if(r)r.isArchived=true;
+  saveResources(resources);renderGrid();
+}
+
+function openImgZoom(src){
+  openModal(`<div style="text-align:center;">
+    <img src="${escA(src)}" style="max-width:100%;max-height:70vh;border-radius:var(--radius-sm);">
+  </div>
+  <div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+}
+
+function reportResource(id){
+  openModal(`<div class="modal-title">Report Resource</div>
+    <div class="form-group"><label class="form-label">Reason</label>
+      <select class="form-select" id="rep-reason">
+        <option>Spam</option><option>Offensive</option><option>Misleading</option><option>Other</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="rep-notes"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="submitReport('${id}')">Submit</button>
+    </div>`);
+}
+
+function submitReport(id){
+  const r=getAbuse();
+  r.push({id:uid(),resourceId:id,reporterId:currentUser.id,reason:document.getElementById('rep-reason').value,notes:document.getElementById('rep-notes').value.trim(),createdAt:new Date().toISOString()});
+  saveAbuse(r);closeModal();alert('Report submitted. Thank you.');
+}
+
+/* ─── POST / EDIT MODAL ─── */
+function openPostModal(editId=null){
+  const resources=getResources();
+  const ex=editId?resources.find(r=>r.id===editId):null;
+  pendingImgs=ex?(ex.images||[]):[];
+
+  const catOpts=SR_CATEGORIES.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('');
+  const thumbsHtml=pendingImgs.map((src,i)=>`<img class="img-thumb" src="${src}" title="Remove" onclick="removeImg(${i})">`).join('');
+
+  openModal(`<div class="modal-title">${editId?'Edit Resource':'+ Share a Resource'}</div>
+    <div class="form-group"><label class="form-label">Title *</label>
+      <input class="form-input" id="sr-title" value="${ex?escA(ex.title):''}"></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-select" id="sr-cat">${catOpts}</select></div>
+    <div class="form-group"><label class="form-label">Description</label>
+      <textarea class="form-textarea" id="sr-desc">${ex?escH(ex.description||''):''}</textarea></div>
+    <div class="form-group"><label class="form-label">Location (where to pick up)</label>
+      <input class="form-input" id="sr-loc" value="${ex?escA(ex.location||''):''}"></div>
+    <div class="form-group"><label class="form-label">Availability</label>
+      <select class="form-select" id="sr-avail">
+        <option value="available" ${!ex||ex.availability==='available'?'selected':''}>Available</option>
+        <option value="borrowed" ${ex&&ex.availability==='borrowed'?'selected':''}>Currently Borrowed</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Images (optional)</label>
+      <input type="file" accept="image/*" multiple onchange="previewImgs(this)">
+      <div class="img-thumb-row" id="img-thumb-row">${thumbsHtml}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="submitResource('${editId||''}')">
+        ${editId?'Save Changes':'Share Resource'}
+      </button>
+    </div>`);
+}
+
+function previewImgs(input){
+  Array.from(input.files).forEach(file=>{
+    if(file.size>500000){alert(`${file.name} too large.`);return;}
+    const reader=new FileReader();
+    reader.onload=e=>{pendingImgs.push(e.target.result);refreshThumbs();};
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeImg(idx){pendingImgs.splice(idx,1);refreshThumbs();}
+
+function refreshThumbs(){
+  const row=document.getElementById('img-thumb-row');
+  if(!row)return;
+  row.innerHTML=pendingImgs.map((src,i)=>`<img class="img-thumb" src="${src}" onclick="removeImg(${i})">`).join('');
+}
+
+function submitResource(editId){
+  const title=document.getElementById('sr-title').value.trim();
+  if(!title){alert('Title required.');return;}
+  const category=document.getElementById('sr-cat').value;
+  const description=document.getElementById('sr-desc').value.trim();
+  const location=document.getElementById('sr-loc').value.trim();
+  const availability=document.getElementById('sr-avail').value;
+
+  const resources=getResources();
+  if(editId){
+    const r=resources.find(r=>r.id===editId);
+    if(!r)return;
+    r.title=title;r.category=category;r.description=description;
+    r.location=location;r.availability=availability;r.images=pendingImgs;
+  } else {
+    resources.unshift({
+      id:uid(),userId:currentUser.id,title,category,description,
+      location,availability,images:pendingImgs,
+      isArchived:false,createdAt:new Date().toISOString()
+    });
+  }
+  saveResources(resources);closeModal();renderGrid();
+}
+
+/* ─── MODAL ─── */
+function openModal(html){
+  document.getElementById('modal-container').innerHTML=
+    `<div class="modal-overlay" onclick="handleOverlayClick(event)"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+function handleOverlayClick(e){if(e.target.classList.contains('modal-overlay'))closeModal();}
+
+window.addEventListener('DOMContentLoaded',initPage);
+</script>
+</body>
+</html>
