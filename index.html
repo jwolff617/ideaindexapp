@@ -660,57 +660,11 @@ function getPanelPrivacyDefault(panelKey){
    DEMO DATA
 ============================================= */
 function generateDemoData(type='adult'){
-  const now=new Date(), fmt=d=>d.toISOString(), ad=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
-  // Student preset: hide panels less relevant to students
   const hiddenPanels = type==='student' ? ['diet-panel','lifemgmt-panel'] : [];
   return {
     settings:{defaultView:'public',quoteSources:[],goalTimeframe:'monthly',primaryGoalId:null,userType:type,hiddenPanels},
-    people:[
-      {id:uid(),name:'Alice Chen',categories:['Friend','Business'],isPrivate:false,isArchived:false,connectionStatus:'accepted',email:'alice@example.com'},
-      {id:uid(),name:'Marcus Rivera',categories:['Mentor'],isPrivate:false,isArchived:false,connectionStatus:'invited',email:'marcus@example.com'},
-      {id:uid(),name:'Priya Kapoor',categories:['Romantic'],isPrivate:true,isArchived:false,connectionStatus:'none',email:''},
-    ],
-    activeProjects:[
-      {id:uid(),name:'Marathon Training',category:'Sport',isFavorite:true,isArchived:false,isPrivate:false,notesForDisplayPanel:['Week 4 of 16','Long run: 14 miles Sat'],linkedGoalId:null,createdAt:fmt(ad(now,-5))},
-      {id:uid(),name:'Spanish A2',category:'Class',isFavorite:false,isArchived:false,isPrivate:false,notesForDisplayPanel:['Duolingo 30 min/day'],linkedGoalId:null,createdAt:fmt(ad(now,-10))},
-      {id:uid(),name:'Freelance Studio',category:'Business',isFavorite:true,isArchived:false,isPrivate:true,notesForDisplayPanel:['Invoices due Friday'],linkedGoalId:null,createdAt:fmt(ad(now,-2))},
-    ],
-    scheduleEvents:[
-      {id:uid(),title:'Team standup',category:'Work',date:fmt(ad(now,1)),recurringPattern:'daily',isArchived:false,isPrivate:false},
-      {id:uid(),title:'Spanish class',category:'Project',date:fmt(ad(now,3)),recurringPattern:'weekly',isArchived:false,isPrivate:false},
-      {id:uid(),title:'Book club meeting',category:'Growth',date:fmt(ad(now,6)),recurringPattern:null,isArchived:false,isPrivate:false},
-    ],
-    journals:[{id:uid(),title:'Thoughts on deep work',content:'Spent two uninterrupted hours on the project today. Flow state achieved.',isPublic:true,reportType:'',createdAt:fmt(now)}],
-    diaries:[{id:uid(),title:'Personal reflection',content:'Feeling overwhelmed but optimistic. Taking it one day at a time.',isPublic:false,reportType:'',createdAt:fmt(now)}],
-    goals:[
-      {id:uid(),text:'Run a half marathon by December',category:'Fitness',linkedProjectId:null,order:0,isArchived:false,isPrivate:false,isPrimary:true,timeframe:'monthly'},
-      {id:uid(),text:'Save $500 this month',category:'Finance',linkedProjectId:null,order:1,isArchived:false,isPrivate:true,isPrimary:false,timeframe:'monthly'},
-      {id:uid(),text:'Read 2 books this quarter',category:'Skill',linkedProjectId:null,order:2,isArchived:false,isPrivate:false,isPrimary:false,timeframe:'weekly'},
-    ],
-    fitness:[
-      {id:uid(),name:'Run 3x per week',isArchived:false,isPrivate:false},
-      {id:uid(),name:'Yoga daily (20 min)',isArchived:false,isPrivate:false},
-      {id:uid(),name:'Strength training 2x week',isArchived:false,isPrivate:false},
-    ],
-    reading:[
-      {id:uid(),title:'Atomic Habits',author:'James Clear',isArchived:false,isPrivate:false},
-      {id:uid(),title:'Deep Work',author:'Cal Newport',isArchived:false,isPrivate:false},
-    ],
-    movies:[
-      {id:uid(),title:'Everything Everywhere All at Once',year:'2022',isArchived:false,isPrivate:false},
-      {id:uid(),title:'Oppenheimer',year:'2023',isArchived:false,isPrivate:false},
-    ],
-    experiences:[{id:uid(),title:'Hiked local state park trail',date:'2024-09-15',isArchived:false,isPrivate:false}],
-    diet:[
-      {id:uid(),goal:'Drink 8 glasses of water daily',isArchived:false,isPrivate:false},
-      {id:uid(),goal:'No added sugar during weekdays',isArchived:false,isPrivate:false},
-    ],
-    lifeMgmt:[
-      {id:uid(),activity:'Submit tax return',description:'File federal & state taxes. Gather W-2s and 1099s first.',category:'Money',isArchived:false,isPrivate:false},
-      {id:uid(),activity:'Call landlord about leak',description:'Kitchen faucet dripping — follow up since last week.',category:'Housing',isArchived:false,isPrivate:false},
-      {id:uid(),activity:'Buy birthday gift for mom',description:'She mentioned wanting a good cookbook.',category:'Shopping',isArchived:false,isPrivate:false},
-      {id:uid(),activity:'Schedule annual physical',description:"Haven't been in two years — book with Dr. Kim.",category:'Healthcare',isArchived:false,isPrivate:false},
-    ]
+    people:[],activeProjects:[],scheduleEvents:[],journals:[],diaries:[],
+    goals:[],fitness:[],reading:[],movies:[],experiences:[],diet:[],lifeMgmt:[]
   };
 }
 
