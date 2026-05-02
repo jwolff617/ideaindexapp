@@ -185,7 +185,10 @@
   #right-bottom-nav .btn{font-size:11px;}
 
   @media(max-width:768px){
-    #main-layout{grid-template-columns:1fr;padding:10px;}
+    #main-layout{grid-template-columns:1fr;padding:10px;display:flex;flex-direction:column;}
+    #center-column{order:0;}
+    #left-column{order:1;}
+    #right-column{order:2;}
     .panel-inner{flex-direction:column;}
     .panel-filters{width:100%;}
     #app-header{flex-wrap:wrap;gap:8px;padding:8px 12px;}
@@ -210,6 +213,23 @@
     .pd-grid.view-3,.pd-grid.view-6,.pd-grid.view-9{grid-template-columns:1fr;}
     .pd-mode-toggle{flex-direction:column;gap:2px;}
   }
+  /* Mobile navigation overlay */
+  #mobile-menu-btn{display:none;}
+  @media(max-width:768px){#mobile-menu-btn{display:inline-block;}}
+  #mobile-nav-overlay{
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(26,23,20,0.95);backdrop-filter:blur(8px);
+    z-index:400;display:none;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;padding:20px;
+  }
+  #mobile-nav-overlay.open{display:flex;}
+  #mobile-nav-overlay .nav-pill{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:40px;padding:12px 24px;width:80%;max-width:240px;
+    text-align:center;font-size:16px;font-weight:500;
+    color:var(--text);cursor:pointer;transition:all var(--transition);
+  }
+  #mobile-nav-overlay .nav-pill:hover{background:var(--accent-bg);color:var(--accent);border-color:#c0d8a0;}
 </style>
 </head>
 <body>
@@ -233,6 +253,11 @@
       <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="signup-name" type="text" placeholder="Your name"></div>
       <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="signup-email" type="email" placeholder="you@email.com"></div>
       <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="signup-password" type="password" placeholder="Min 6 characters"></div>
+      <div class="form-group"><label class="form-label">Account Type</label>
+        <select class="form-select" id="signup-type">
+          <option value="adult">Adult (all panels visible)</option>
+          <option value="student">Student (simplified view)</option>
+        </select></div>
       <button class="btn btn-accent" style="width:100%;padding:10px;" onclick="handleSignup()">Create Account</button>
     </div>
   </div>
@@ -244,6 +269,7 @@
     <div class="header-title">Idea Index</div>
     <div class="header-welcome">Welcome, <span id="header-user-name">—</span></div>
     <div class="header-spacer"></div>
+    <button id="mobile-menu-btn" class="btn btn-sm" onclick="toggleMobileNav()">☰ Menu</button>
     <div class="view-toggle">
       <input type="radio" name="view-mode" id="view-public" value="public" checked onchange="handleViewToggle()">
       <label for="view-public">Public</label>
@@ -494,6 +520,16 @@
   </div><!-- /main-layout -->
 </div><!-- /app -->
 
+<div id="mobile-nav-overlay">
+  <div class="nav-pill" onclick="scrollToId('people-panel')">👥 People</div>
+  <div class="nav-pill" onclick="scrollToId('projects-panel')">🚀 Projects</div>
+  <div class="nav-pill" onclick="scrollToId('schedule-panel')">📅 Schedule</div>
+  <div class="nav-pill" onclick="scrollToId('today-panel')">☀️ Today</div>
+  <div class="nav-pill" onclick="scrollToId('ai-panel')">🤖 AI Agent</div>
+  <div class="nav-pill" onclick="scrollToId('goals-panel')">🎯 Goals</div>
+  <div class="nav-pill" onclick="scrollToId('lifemgmt-panel')">🏠 Life Mgmt</div>
+  <div class="nav-pill" onclick="toggleMobileNav()" style="background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;">✕ Close</div>
+</div>
 <div id="modal-container"></div>
 
 <script>
@@ -509,6 +545,7 @@ let selectedSimpleItems={fitness:null,reading:null,movies:null,experiences:null,
 let activePeopleFilters=[], activeProjectFilters=[], activeScheduleFilters=[];
 let projectSort='recent';
 let peopleShowAll=false, projectsShowAll=false, eventsShowAll=false, goalsShowAll=false;
+let simpleShowAllState={fitness:false,reading:false,movies:false,experiences:false,diet:false,lifeMgmt:false};
 let simpleShowAll={fitness:false,reading:false,movies:false,experiences:false,diet:false};
 let aiChatHistory=[];
 
@@ -613,13 +650,21 @@ function saveUsers(u){
 function getCurrentUserData(){if(!currentUser)return null;return getUsers().find(u=>u.id===currentUser.id)||null;}
 function updateUserData(fn){const us=getUsers();const i=us.findIndex(u=>u.id===currentUser.id);if(i<0)return;fn(us[i]);saveUsers(us);currentUser=us[i];}
 function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+function getPanelPrivacyDefault(panelKey){
+  // Returns the current panel-level privacy, falling back to global view
+  const user=getCurrentUserData();
+  return user?.settings?.panelPrivacy?.[panelKey]||'private';
+}
 
 /* =============================================
    DEMO DATA
 ============================================= */
-function generateDemoData(){
+function generateDemoData(type='adult'){
   const now=new Date(), fmt=d=>d.toISOString(), ad=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+  // Student preset: hide panels less relevant to students
+  const hiddenPanels = type==='student' ? ['diet-panel','lifemgmt-panel'] : [];
   return {
+    settings:{defaultView:'public',quoteSources:[],goalTimeframe:'monthly',primaryGoalId:null,userType:type,hiddenPanels},
     people:[
       {id:uid(),name:'Alice Chen',categories:['Friend','Business'],isPrivate:false,isArchived:false,connectionStatus:'accepted',email:'alice@example.com'},
       {id:uid(),name:'Marcus Rivera',categories:['Mentor'],isPrivate:false,isArchived:false,connectionStatus:'invited',email:'marcus@example.com'},
@@ -700,12 +745,14 @@ function handleSignup(){
     if(pw.length<6){showAuthError('Password must be at least 6 characters.');return;}
     const users=getUsers();
     if(users.find(u=>u.email===email)){showAuthError('Email already registered.');return;}
-    const demo=generateDemoData();
+    const userType=document.getElementById('signup-type')?.value||'adult';
+    const demo=generateDemoData(userType);
+    const {settings:_demoSettings,...demoData}=demo; // exclude demo.settings from spread
     const nu={id:uid(),name,email,password:pw,
-      settings:{defaultView:'public',quoteSources:[],goalTimeframe:'monthly',primaryGoalId:null},
+      settings:{defaultView:'public',quoteSources:[],goalTimeframe:'monthly',primaryGoalId:null,userType,hiddenPanels:_demoSettings?.hiddenPanels||[]},
       connections:[],pendingInvites:[],
       customPeopleCategories:[],customProjectCategories:[],customScheduleCategories:[],
-      ...demo};
+      ...demoData};
     users.push(nu);saveUsers(users);loginUser(nu);
   } catch(e){ showAuthError('Signup error: '+e.message); console.error(e); }
 }
@@ -746,10 +793,25 @@ function isVisible(item){return!(viewMode==='public'&&item.isPrivate);}
    RENDER ALL
 ============================================= */
 function renderAllPanels(){
-  renderPeoplePanel();renderProjectsPanel();renderSchedulePanel();
-  renderTodayPanel();renderGoalsPanel();
-  ['fitness','reading','movies','experiences','diet'].forEach(renderSimplePanel);
-  renderLifeMgmtPanel();renderProjectDisplay();
+  const hidden=(getCurrentUserData()?.settings?.hiddenPanels)||[];
+  function ph(panelId,renderFn){
+    const el=document.getElementById(panelId);
+    if(el)el.style.display=hidden.includes(panelId)?'none':'';
+    if(!hidden.includes(panelId))renderFn();
+  }
+  ph('people-panel',renderPeoplePanel);
+  ph('projects-panel',renderProjectsPanel);
+  ph('schedule-panel',renderSchedulePanel);
+  ph('today-panel',renderTodayPanel);
+  ph('goals-panel',renderGoalsPanel);
+  ['fitness','reading','movies','experiences','diet'].forEach(pk=>{
+    const pid=pk+'-panel';const el=document.getElementById(pid);
+    if(el)el.style.display=hidden.includes(pid)?'none':'';
+    if(!hidden.includes(pid))renderSimplePanel(pk);
+  });
+  ph('lifemgmt-panel',renderLifeMgmtPanel);
+  ph('project-display-panel',renderProjectDisplay);
+  ph('ai-panel',()=>{}); // AI panel has no render fn needed
 }
 
 /* ============================================================
@@ -764,7 +826,7 @@ function renderPeoplePanel(){
   const an=document.createElement('div');an.className='filter-item add-new';an.textContent='+ Add new';an.onclick=addCustomPeopleCategory;fe.appendChild(an);
 
   let people=(user.people||[]).filter(p=>!p.isArchived&&isVisible(p));
-  if(activePeopleFilters.length)people=people.filter(p=>activePeopleFilters.every(f=>p.categories?.includes(f)));
+  if(activePeopleFilters.length)people=people.filter(p=>activePeopleFilters.some(f=>(p.categories||[]).includes(f)));
   people.sort((a,b)=>a.name.localeCompare(b.name));
   const le=document.getElementById('people-list');le.innerHTML='';
   if(!people.length){le.innerHTML='<div class="empty-state">No people match.</div>';return;}
@@ -861,10 +923,11 @@ function renderProjectsPanel(){
   const cnt=projectsShowAll?projs.length:Math.min(9,projs.length);
   for(let i=0;i<cnt;i++){const p=projs[i],abbr=PROJECT_ABBR[p.category]||p.category.slice(0,4);
     const d=document.createElement('div');d.className='list-item'+(selectedProjectId===p.id?' selected':'');
-    d.onclick=()=>{selectedProjectId=selectedProjectId===p.id?null:p.id;renderProjectsPanel();};
+    d.onclick=()=>{selectedProjectId=p.id;renderProjectsPanel();openNotesEditorModal(p.id);};
     d.innerHTML=`<span class="list-item-badge">${abbr}</span><span class="list-item-name">${escHtml(p.name)}</span>${p.isPrivate?'<span class="private-badge">priv</span>':''}<span class="fav-star" onclick="toggleFavorite('${p.id}',event)">${p.isFavorite?'★':'☆'}</span>`;
     le.appendChild(d);}
   if(projs.length>9&&!projectsShowAll){const l=document.createElement('span');l.className='view-all-link';l.textContent=`View all (${projs.length})`;l.onclick=()=>{projectsShowAll=true;renderProjectsPanel();};le.appendChild(l);}
+  if(projectsShowAll&&projs.length>9){const l=document.createElement('span');l.className='view-all-link';l.textContent='Show less';l.onclick=()=>{projectsShowAll=false;renderProjectsPanel();};le.appendChild(l);}
 }
 
 function toggleProjectFilter(c){const i=activeProjectFilters.indexOf(c);if(i>=0)activeProjectFilters.splice(i,1);else activeProjectFilters.push(c);projectsShowAll=false;renderProjectsPanel();}
@@ -877,6 +940,7 @@ function openAddProjectModal(editId=null){
   openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Project</div>
     <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="fp2-name" value="${ex?escAttr(ex.name):''}"></div>
     <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="fp2-cat">${allCats.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Rank <span style="font-weight:300;font-size:10px;">(higher = shown first in Display)</span></label><input class="form-input" id="fp2-rank" type="number" min="0" max="999" value="${ex?ex.rank||0:0}"></div>
     <div class="form-group"><label class="form-label">Notes (one per line)</label><textarea class="form-textarea" id="fp2-notes">${ex?(ex.notesForDisplayPanel||[]).join('\n'):''}</textarea></div>
     <label class="form-checkbox-row"><input type="checkbox" id="fp2-fav" ${ex&&ex.isFavorite?'checked':''}> Favorite</label>
     <label class="form-checkbox-row" style="margin-top:6px;"><input type="checkbox" id="fp2-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
@@ -887,7 +951,8 @@ function saveProject(editId){
   const name=document.getElementById('fp2-name').value.trim();if(!name){alert('Name required.');return;}
   const cat=document.getElementById('fp2-cat').value,notes=document.getElementById('fp2-notes').value.split('\n').filter(l=>l.trim());
   const fav=document.getElementById('fp2-fav').checked,priv=document.getElementById('fp2-private').checked;
-  updateUserData(u=>{if(editId){const p=u.activeProjects.find(p=>p.id===editId);if(p){p.name=name;p.category=cat;p.notesForDisplayPanel=notes;p.isFavorite=fav;p.isPrivate=priv;}}else u.activeProjects.push({id:uid(),name,category:cat,isFavorite:fav,isPrivate:priv,isArchived:false,notesForDisplayPanel:notes,linkedGoalId:null,createdAt:new Date().toISOString()});});
+  const rank=parseInt(document.getElementById('fp2-rank')?.value||0)||0;
+  updateUserData(u=>{if(editId){const p=u.activeProjects.find(p=>p.id===editId);if(p){p.name=name;p.category=cat;p.rank=rank;p.notesForDisplayPanel=notes;p.isFavorite=fav;p.isPrivate=priv;}}else u.activeProjects.push({id:uid(),name,category:cat,rank,isFavorite:fav,isPrivate:priv,isArchived:false,notesForDisplayPanel:notes,linkedGoalId:null,createdAt:new Date().toISOString()});});
   closeModal();renderProjectsPanel();renderTodayPanel();renderProjectDisplay();
 }
 
@@ -902,7 +967,7 @@ function openManageProjectsModal(){
   h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;openModal(null,h);
 }
 function deleteProject(id){if(!confirm('Delete permanently?'))return;updateUserData(u=>{u.activeProjects=u.activeProjects.filter(p=>p.id!==id);});closeModal();renderProjectsPanel();}
-function restoreProject(id){updateUserData(u=>{const p=u.activeProjects.find(p=>p.id===id);if(p)p.isArchived=false;});closeModal();renderProjectsPanel();}
+function restoreProject(id){updateUserData(u=>{const p=u.activeProjects.find(p=>p.id===id);if(p)p.isArchived=false;});closeModal();renderProjectsPanel();renderProjectDisplay();}
 function openViewAllProjects(){projectsShowAll=true;renderProjectsPanel();}
 
 /* ============================================================
@@ -921,11 +986,15 @@ function renderSchedulePanel(){
   const le=document.getElementById('schedule-list');le.innerHTML='';
   if(!evs.length){le.innerHTML='<div class="empty-state">No upcoming events.</div>';return;}
   const cnt=eventsShowAll?evs.length:Math.min(7,evs.length);
-  for(let i=0;i<cnt;i++){const ev=evs[i],ds=new Date(ev.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  for(let i=0;i<cnt;i++){const ev=evs[i];
+    const eventDate=new Date(ev.date);
+    const dateStr=eventDate.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const timeStr=eventDate.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     const d=document.createElement('div');d.className='schedule-item';
-    d.innerHTML=`<div class="schedule-date">${ds}</div><div class="schedule-title">${escHtml(ev.title)}${ev.recurringPattern?' <span class="tag">↻</span>':''}${ev.isPrivate?' <span class="private-badge">priv</span>':''}</div>`;
+    d.innerHTML=`<div class="schedule-date">${dateStr} ${timeStr}</div><div class="schedule-title">${escHtml(ev.title)}${ev.recurringPattern?' <span class="tag">↻</span>':''}${ev.isPrivate?' <span class="private-badge">priv</span>':''}</div>${ev.location?`<div style="font-size:10px;color:var(--text-light);margin-top:1px;">📍 ${escHtml(ev.location)}</div>`:''}`;
     le.appendChild(d);}
   if(evs.length>7&&!eventsShowAll){const l=document.createElement('span');l.className='view-all-link';l.textContent=`View all (${evs.length})`;l.onclick=()=>{eventsShowAll=true;renderSchedulePanel();};le.appendChild(l);}
+  if(eventsShowAll&&evs.length>7){const l=document.createElement('span');l.className='view-all-link';l.textContent='Show less';l.onclick=()=>{eventsShowAll=false;renderSchedulePanel();};le.appendChild(l);}
 }
 function toggleScheduleFilter(c){const i=activeScheduleFilters.indexOf(c);if(i>=0)activeScheduleFilters.splice(i,1);else activeScheduleFilters.push(c);renderSchedulePanel();}
 function addCustomScheduleCategory(){const n=prompt('New category:');if(!n?.trim())return;updateUserData(u=>{if(!u.customScheduleCategories)u.customScheduleCategories=[];if(!u.customScheduleCategories.includes(n.trim()))u.customScheduleCategories.push(n.trim());});renderSchedulePanel();}
@@ -933,10 +1002,18 @@ function addCustomScheduleCategory(){const n=prompt('New category:');if(!n?.trim
 function openAddEventModal(editId=null){
   const user=getCurrentUserData(),allCats=[...SCHEDULE_CATEGORIES,...(user.customScheduleCategories||[])];
   const ex=editId?user.scheduleEvents.find(e=>e.id===editId):null,today=new Date().toISOString().slice(0,10);
+  // Extract local time from stored ISO date for editing
+  let exTime='12:00';
+  if(ex&&ex.date){const d=new Date(ex.date);if(!isNaN(d.getTime()))exTime=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
   openModal(null,`<div class="modal-title">${editId?'Edit':'Add'} Event</div>
-    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="fe-title" value="${ex?escAttr(ex.title):''}"></div>
-    <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="fe-date" type="date" value="${ex?ex.date.slice(0,10):today}"></div>
+    <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="fe-title" value="${ex?escAttr(ex.title):''}"></div>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">Date *</label><input class="form-input" id="fe-date" type="date" value="${ex?ex.date.slice(0,10):today}"></div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Time</label><input class="form-input" id="fe-time" type="time" value="${exTime}"></div>
+    </div>
     <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="fe-cat">${allCats.map(c=>`<option value="${c}" ${ex&&ex.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Location (optional)</label><input class="form-input" id="fe-location" value="${ex?escAttr(ex.location||''):''}" placeholder="Address, virtual meeting link, etc."></div>
+    <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="fe-notes" placeholder="Details about this event...">${ex?escHtml(ex.notes||''):''}</textarea></div>
     <label class="form-checkbox-row"><input type="checkbox" id="fe-private" ${ex&&ex.isPrivate?'checked':''}> Mark as private</label>
     <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveEvent('${editId||''}')">Save</button></div>`);
 }
@@ -944,9 +1021,14 @@ function openAddEventModal(editId=null){
 function openAddRecurringEventModal(){
   const user=getCurrentUserData(),allCats=[...SCHEDULE_CATEGORIES,...(user.customScheduleCategories||[])],today=new Date().toISOString().slice(0,10);
   openModal(null,`<div class="modal-title">Add Recurring Event</div>
-    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="fe-title"></div>
-    <div class="form-group"><label class="form-label">Start Date</label><input class="form-input" id="fe-date" type="date" value="${today}"></div>
+    <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="fe-title"></div>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:1;"><label class="form-label">Start Date *</label><input class="form-input" id="fe-date" type="date" value="${today}"></div>
+      <div class="form-group" style="flex:1;"><label class="form-label">Time</label><input class="form-input" id="fe-time" type="time" value="12:00"></div>
+    </div>
     <div class="form-group"><label class="form-label">Pattern</label><select class="form-select" id="fe-recurring"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div>
+    <div class="form-group"><label class="form-label">Location (optional)</label><input class="form-input" id="fe-location" placeholder="Address, virtual link, etc."></div>
+    <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="fe-notes" placeholder="Details about this event..."></textarea></div>
     <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="fe-cat">${allCats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
     <label class="form-checkbox-row"><input type="checkbox" id="fe-private"> Mark as private</label>
     <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveEvent('',true)">Save</button></div>`);
@@ -954,20 +1036,44 @@ function openAddRecurringEventModal(){
 
 function saveEvent(editId,recurring=false){
   const title=document.getElementById('fe-title').value.trim();if(!title){alert('Title required.');return;}
-  const date=document.getElementById('fe-date').value,cat=document.getElementById('fe-cat').value,priv=document.getElementById('fe-private').checked;
+  const dateStr=document.getElementById('fe-date').value;
+  const timePicker=document.getElementById('fe-time');
+  const timeStr=timePicker?timePicker.value:'12:00';
+  // Fix timezone: use noon local time to avoid date shifting across timezones
+  const [yr,mo,dy]=dateStr.split('-').map(Number);
+  const [hr,mn]=(timeStr||'12:00').split(':').map(Number);
+  const localDate=new Date(yr,mo-1,dy,hr||12,mn||0,0,0);
+  const dateISO=localDate.toISOString();
+  const cat=document.getElementById('fe-cat').value,priv=document.getElementById('fe-private').checked;
+  const locEl=document.getElementById('fe-location');
+  const notesEl=document.getElementById('fe-notes');
+  const location=locEl?locEl.value.trim():'';
+  const notes=notesEl?notesEl.value.trim():'';
   const rp=recurring?document.getElementById('fe-recurring').value:null;
-  updateUserData(u=>{if(editId){const e=u.scheduleEvents.find(e=>e.id===editId);if(e){e.title=title;e.date=new Date(date).toISOString();e.category=cat;e.isPrivate=priv;}}else u.scheduleEvents.push({id:uid(),title,category:cat,date:new Date(date).toISOString(),recurringPattern:rp,isArchived:false,isPrivate:priv});});
+  updateUserData(u=>{if(editId){const e=u.scheduleEvents.find(e=>e.id===editId);if(e){e.title=title;e.date=dateISO;e.category=cat;e.isPrivate=priv;e.location=location;e.notes=notes;}}else u.scheduleEvents.push({id:uid(),title,category:cat,date:dateISO,location,notes,recurringPattern:rp,isArchived:false,isPrivate:priv});});
   closeModal();renderSchedulePanel();
 }
 
 function openManageEventsModal(){
-  const user=getCurrentUserData(),evs=(user.scheduleEvents||[]).filter(e=>!e.isArchived);
+  const user=getCurrentUserData();
+  const active=(user.scheduleEvents||[]).filter(e=>!e.isArchived);
+  const archived=(user.scheduleEvents||[]).filter(e=>e.isArchived);
   let h=`<div class="modal-title">Manage Events</div>`;
-  if(!evs.length)h+='<div class="empty-state">No events.</div>';
-  evs.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(e=>{const ds=new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});h+=`<div class="manage-list-item"><div class="name">${ds} — ${escHtml(e.title)}</div>${e.recurringPattern?`<span class="tag">↻${e.recurringPattern}</span>`:''}<button class="btn btn-sm" onclick="closeModal();openAddEventModal('${e.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Del</button></div>`;});
-  h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;openModal(null,h);
+  if(!active.length)h+='<div class="empty-state">No events.</div>';
+  active.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(e=>{
+    const ds=new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    h+=`<div class="manage-list-item"><div class="name">${ds} — ${escHtml(e.title)}${e.location?' 📍'+escHtml(e.location):''}</div>${e.recurringPattern?`<span class="tag">↻${e.recurringPattern}</span>`:''}<button class="btn btn-sm" onclick="closeModal();openAddEventModal('${e.id}')">Edit</button><button class="btn btn-sm" onclick="archiveEvent('${e.id}')">Archive</button><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Del</button></div>`;
+  });
+  if(archived.length){
+    h+=`<div class="form-label" style="margin:10px 0 6px;">Archived</div>`;
+    archived.forEach(e=>{h+=`<div class="manage-list-item"><div class="name" style="color:var(--text-light)">${escHtml(e.title)}</div><button class="btn btn-sm" onclick="restoreEvent('${e.id}')">Restore</button><button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">Del</button></div>`;});
+  }
+  h+=`<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;
+  openModal(null,h);
 }
-function deleteEvent(id){if(!confirm('Delete?'))return;updateUserData(u=>{u.scheduleEvents=u.scheduleEvents.filter(e=>e.id!==id);});closeModal();renderSchedulePanel();}
+function archiveEvent(id){updateUserData(u=>{const e=u.scheduleEvents.find(e=>e.id===id);if(e)e.isArchived=true;});closeModal();openManageEventsModal();}
+function restoreEvent(id){updateUserData(u=>{const e=u.scheduleEvents.find(e=>e.id===id);if(e)e.isArchived=false;});closeModal();openManageEventsModal();renderSchedulePanel();}
+function deleteEvent(id){if(!confirm('Delete permanently?'))return;updateUserData(u=>{u.scheduleEvents=u.scheduleEvents.filter(e=>e.id!==id);});closeModal();renderSchedulePanel();}
 function openViewAllEvents(){eventsShowAll=true;renderSchedulePanel();}
 
 /* ============================================================
@@ -977,13 +1083,13 @@ function openJournalModal(prefillTitle='',prefillType=''){
   if(prefillTitle||prefillType){openNewEntryModal('journal',prefillTitle,prefillType);return;}
   const user=getCurrentUserData(),entries=(user.journals||[]).filter(j=>isVisible({isPrivate:!j.isPublic}));
   const eh=entries.length?entries.map(j=>`<div style="margin-bottom:10px;padding:10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);"><div style="font-weight:600;font-size:13px;margin-bottom:3px;">${escHtml(j.title)}</div><div style="font-size:12px;color:var(--text-muted);">${escHtml(j.content.slice(0,120))}${j.content.length>120?'…':''}</div><div style="margin-top:5px;display:flex;gap:5px;align-items:center;">${j.reportType?`<span class="tag">${j.reportType}</span>`:''}<span style="font-size:11px;color:var(--text-light);">${new Date(j.createdAt).toLocaleDateString()}</span></div></div>`).join(''):'<div class="empty-state">No journal entries yet.</div>';
-  openModal(null,`<div class="modal-title">Journal</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Public by default.</p><button class="btn btn-accent" style="margin-bottom:12px;" onclick="openNewEntryModal('journal')">+ New Entry</button>${eh}<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+  openModal(null,`<div class="modal-title">Journal</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Public by default.</p><div style="display:flex;gap:6px;margin-bottom:12px;"><button class="btn btn-accent" onclick="openNewEntryModal('journal')">+ New Entry</button><button class="btn" onclick="openJournalManagementModal('journal')">Manage Entries</button></div>${eh}<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
 }
 
 function openDiaryModal(){
   const user=getCurrentUserData(),entries=user.diaries||[];
   const eh=entries.length?entries.map(j=>`<div style="margin-bottom:10px;padding:10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);"><div style="font-weight:600;font-size:13px;margin-bottom:3px;">${escHtml(j.title)} <span class="private-badge">private</span></div><div style="font-size:12px;color:var(--text-muted);">${escHtml(j.content.slice(0,120))}${j.content.length>120?'…':''}</div><div style="font-size:11px;color:var(--text-light);margin-top:5px;">${new Date(j.createdAt).toLocaleDateString()}</div></div>`).join(''):'<div class="empty-state">No diary entries yet.</div>';
-  openModal(null,`<div class="modal-title">Diary</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Always private.</p><button class="btn btn-accent" style="margin-bottom:12px;" onclick="openNewEntryModal('diary')">+ New Entry</button>${eh}<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
+  openModal(null,`<div class="modal-title">Diary</div><p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">Always private.</p><div style="display:flex;gap:6px;margin-bottom:12px;"><button class="btn btn-accent" onclick="openNewEntryModal('diary')">+ New Entry</button><button class="btn" onclick="openJournalManagementModal('diary')">Manage Entries</button></div>${eh}<div class="modal-actions"><button class="btn btn-accent" onclick="closeModal()">Close</button></div>`);
 }
 
 function openNewEntryModal(type,prefillTitle='',prefillType=''){
@@ -999,8 +1105,77 @@ function saveEntry(type){
   const title=document.getElementById('je-title').value.trim(),content=document.getElementById('je-content').value.trim();
   if(!title||!content){alert('Title and content required.');return;}
   const rt=document.getElementById('je-type').value;
-  updateUserData(u=>{const e={id:uid(),title,content,reportType:rt,createdAt:new Date().toISOString()};if(type==='journal'){e.isPublic=true;if(!u.journals)u.journals=[];u.journals.push(e);}else{e.isPublic=false;if(!u.diaries)u.diaries=[];u.diaries.push(e);}});
+  updateUserData(u=>{const e={id:uid(),title,content,reportType:rt,isArchived:false,createdAt:new Date().toISOString()};if(type==='journal'){e.isPublic=true;if(!u.journals)u.journals=[];u.journals.push(e);}else{e.isPublic=false;if(!u.diaries)u.diaries=[];u.diaries.push(e);}});
   closeModal();
+}
+
+function openJournalManagementModal(type){
+  const user=getCurrentUserData();
+  const arr=type==='journal'?(user.journals||[]):(user.diaries||[]);
+  const active=arr.filter(e=>!e.isArchived);
+  const archived=arr.filter(e=>e.isArchived);
+  const label=type==='journal'?'Journal':'Diary';
+  let h=`<div class="modal-title">Manage ${label} Entries</div>`;
+  if(!active.length)h+='<div class="empty-state">No entries yet.</div>';
+  active.forEach(e=>{
+    h+=`<div class="manage-list-item">
+      <div class="name" style="flex:1;">${escHtml(e.title)}<span style="font-size:10px;color:var(--text-light);margin-left:6px;">${new Date(e.createdAt).toLocaleDateString()}</span></div>
+      ${e.reportType?`<span class="tag">${escHtml(e.reportType)}</span>`:''}
+      <button class="btn btn-sm" onclick="editJournalEntry('${type}','${e.id}')">Edit</button>
+      <button class="btn btn-sm" onclick="archiveJournalEntry('${type}','${e.id}')">Archive</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteJournalEntry('${type}','${e.id}')">Del</button>
+    </div>`;
+  });
+  if(archived.length){
+    h+=`<div class="form-label" style="margin:10px 0 6px;">Archived</div>`;
+    archived.forEach(e=>{
+      h+=`<div class="manage-list-item"><div class="name" style="color:var(--text-light);">${escHtml(e.title)}</div>
+        <button class="btn btn-sm" onclick="restoreJournalEntry('${type}','${e.id}')">Restore</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteJournalEntry('${type}','${e.id}')">Del</button>
+      </div>`;
+    });
+  }
+  h+=`<div class="modal-actions"><button class="btn" onclick="${type==='journal'?'openJournalModal()':'openDiaryModal()'}">← Back</button><button class="btn btn-accent" onclick="closeModal()">Done</button></div>`;
+  openModal(null,h);
+}
+
+function editJournalEntry(type,entryId){
+  const user=getCurrentUserData();
+  const arr=type==='journal'?(user.journals||[]):(user.diaries||[]);
+  const entry=arr.find(e=>e.id===entryId);if(!entry)return;
+  const REPORT_TYPES=['','Book Report','Movie Report','Experience Report'];
+  openModal(null,`<div class="modal-title">Edit Entry</div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="je-title" value="${escAttr(entry.title)}"></div>
+    <div class="form-group"><label class="form-label">Content</label><textarea class="form-textarea" id="je-content" style="min-height:120px;">${escHtml(entry.content||'')}</textarea></div>
+    <div class="form-group"><label class="form-label">Report Type</label><select class="form-select" id="je-type">${REPORT_TYPES.map(t=>`<option value="${t}" ${t===entry.reportType?'selected':''}>${t||'None'}</option>`).join('')}</select></div>
+    <div class="modal-actions"><button class="btn" onclick="openJournalManagementModal('${type}')">← Back</button><button class="btn btn-accent" onclick="saveEditedEntry('${type}','${entryId}')">Save</button></div>`);
+}
+
+function saveEditedEntry(type,entryId){
+  const title=document.getElementById('je-title').value.trim();
+  const content=document.getElementById('je-content').value.trim();
+  if(!title||!content){alert('Title and content required.');return;}
+  const reportType=document.getElementById('je-type').value;
+  updateUserData(u=>{
+    const arr=type==='journal'?u.journals:u.diaries;
+    const entry=(arr||[]).find(e=>e.id===entryId);
+    if(entry){entry.title=title;entry.content=content;entry.reportType=reportType;}
+  });
+  openJournalManagementModal(type);
+}
+
+function archiveJournalEntry(type,entryId){
+  updateUserData(u=>{const arr=type==='journal'?u.journals:u.diaries;const e=(arr||[]).find(e=>e.id===entryId);if(e)e.isArchived=true;});
+  openJournalManagementModal(type);
+}
+function restoreJournalEntry(type,entryId){
+  updateUserData(u=>{const arr=type==='journal'?u.journals:u.diaries;const e=(arr||[]).find(e=>e.id===entryId);if(e)e.isArchived=false;});
+  openJournalManagementModal(type);
+}
+function deleteJournalEntry(type,entryId){
+  if(!confirm('Delete permanently?'))return;
+  updateUserData(u=>{if(type==='journal')u.journals=(u.journals||[]).filter(e=>e.id!==entryId);else u.diaries=(u.diaries||[]).filter(e=>e.id!==entryId);});
+  openJournalManagementModal(type);
 }
 
 /* ============================================================
@@ -1063,13 +1238,13 @@ function buildAIContext() {
   if (!user) return '{}';
   const snap = {
     name: user.name,
-    goals: (user.goals||[]).filter(g=>!g.isArchived)
+    goals: (user.goals||[]).filter(g=>!g.isArchived&&isVisible(g))
       .map(g=>({ text:g.text, category:g.category, timeframe:g.timeframe||'', isPrimary:g.isPrimary||false })),
-    projects: (user.activeProjects||[]).filter(p=>!p.isArchived)
+    projects: (user.activeProjects||[]).filter(p=>!p.isArchived&&isVisible(p))
       .map(p=>({ name:p.name, category:p.category, notes:(p.notesForDisplayPanel||[]).filter(Boolean), favorite:p.isFavorite })),
-    people: (user.people||[]).filter(p=>!p.isArchived)
+    people: (user.people||[]).filter(p=>!p.isArchived&&isVisible(p))
       .map(p=>({ name:p.name, labels:p.labels||p.categories||[], notes:p.notes||'', connection:p.connectionStatus })),
-    schedule: (user.scheduleEvents||[]).filter(e=>!e.isArchived)
+    schedule: (user.scheduleEvents||[]).filter(e=>!e.isArchived&&isVisible(e))
       .map(e=>({ title:e.title, date:e.date||e.startDateTime||'', category:e.category, location:e.location||'' })),
     journals: (user.journals||[]).slice(-15)
       .map(j=>({ title:j.title, content:(j.content||'').slice(0,300), reportType:j.reportType||'', date:j.createdAt })),
@@ -1504,6 +1679,12 @@ function openSettingsModal(){
   openModal(null,`<div class="modal-title">Settings</div>
 
     <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;margin-top:4px;">App Settings</div>
+    <div class="form-group"><label class="form-label">Account Type</label>
+      <select class="form-select" id="set-usertype">
+        <option value="adult" ${(s.userType||'adult')==='adult'?'selected':''}>Adult (all panels)</option>
+        <option value="student" ${s.userType==='student'?'selected':''}>Student (simplified)</option>
+      </select>
+      <div style="font-size:10px;color:var(--text-light);margin-top:2px;">Changing this adjusts which panels are visible by default.</div></div>
     <div class="form-group"><label class="form-label">Default View</label>
       <select class="form-select" id="set-dv"><option value="public" ${(s.defaultView||'public')==='public'?'selected':''}>Public</option><option value="private" ${s.defaultView==='private'?'selected':''}>Private</option></select></div>
     <div class="form-group"><label class="form-label">Goal Timeframe</label>
@@ -1525,16 +1706,39 @@ function openSettingsModal(){
     </div>
     ${currentUser.email==='admin@ideaindex.com'?`<div style="margin-top:10px;"><a href="admin.html" class="btn" style="background:var(--danger-bg);color:var(--danger);border-color:#d9a0a0;">🛡 Admin Panel</a></div>`:''}
 
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Visible Panels</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="people-panel" ${!(s.hiddenPanels||[]).includes('people-panel')?'checked':''}> People</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="projects-panel" ${!(s.hiddenPanels||[]).includes('projects-panel')?'checked':''}> Active Projects</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="schedule-panel" ${!(s.hiddenPanels||[]).includes('schedule-panel')?'checked':''}> Schedule</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="today-panel" ${!(s.hiddenPanels||[]).includes('today-panel')?'checked':''}> Today</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="ai-panel" ${!(s.hiddenPanels||[]).includes('ai-panel')?'checked':''}> AI Assistant</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="project-display-panel" ${!(s.hiddenPanels||[]).includes('project-display-panel')?'checked':''}> Project Display</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="goals-panel" ${!(s.hiddenPanels||[]).includes('goals-panel')?'checked':''}> Goals</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="fitness-panel" ${!(s.hiddenPanels||[]).includes('fitness-panel')?'checked':''}> Fitness</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="reading-panel" ${!(s.hiddenPanels||[]).includes('reading-panel')?'checked':''}> Reading</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="movies-panel" ${!(s.hiddenPanels||[]).includes('movies-panel')?'checked':''}> Movies</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="experiences-panel" ${!(s.hiddenPanels||[]).includes('experiences-panel')?'checked':''}> Experiences</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="diet-panel" ${!(s.hiddenPanels||[]).includes('diet-panel')?'checked':''}> Diet</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding:2px 0;cursor:pointer;"><input type="checkbox" name="vis-panel" value="lifemgmt-panel" ${!(s.hiddenPanels||[]).includes('lifemgmt-panel')?'checked':''}> Life Management</label>
+    </div>
     <div class="modal-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="saveSettings()">Save Settings</button></div>`);
 }
 
 function saveSettings(){
   const dv=document.getElementById('set-dv').value,gt=document.getElementById('set-gt').value;
+  const userType=document.getElementById('set-usertype')?.value||'adult';
   const checked=Array.from(document.querySelectorAll('input[name="sq-author"]:checked')).map(e=>e.value);
   const allA=[...new Set(QUOTES.map(q=>q.author))];
   const qs=checked.length===allA.length?[]:checked;
-  updateUserData(u=>{u.settings={...(u.settings||{}),defaultView:dv,goalTimeframe:gt,quoteSources:qs};});
-  closeModal();renderTodayPanel();
+  const visChecked=Array.from(document.querySelectorAll('input[name="vis-panel"]:checked')).map(e=>e.value);
+  const allPids=['people-panel','projects-panel','schedule-panel','today-panel','ai-panel','project-display-panel','goals-panel','fitness-panel','reading-panel','movies-panel','experiences-panel','diet-panel','lifemgmt-panel'];
+  const hiddenPanels=allPids.filter(pid=>!visChecked.includes(pid));
+  updateUserData(u=>{u.settings={...(u.settings||{}),defaultView:dv,goalTimeframe:gt,quoteSources:qs,hiddenPanels,userType};});
+  closeModal();
+  renderAllPanels();
+  renderTodayPanel();
 }
 
 function cancelInvite(email){
@@ -1586,6 +1790,8 @@ function openModal(id,html){
   document.getElementById('modal-container').innerHTML=`<div class="modal-overlay" onclick="handleOverlayClick(event)"><div class="modal">${html}</div></div>`;
 }
 function closeModal(){document.getElementById('modal-container').innerHTML='';}
+function toggleMobileNav(){const o=document.getElementById('mobile-nav-overlay');o.classList.toggle('open');}
+function scrollToId(id){document.getElementById('mobile-nav-overlay')?.classList.remove('open');document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});}
 function handleOverlayClick(e){if(e.target.classList.contains('modal-overlay'))closeModal();}
 
 /* ============================================================
@@ -1619,7 +1825,7 @@ function renderProjectDisplay(){
   }
   const user=getCurrentUserData();if(!user){el.innerHTML='';return;}
   // Show all non-archived projects (MVP: creation order)
-  const projs=(user.activeProjects||[]).filter(p=>!p.isArchived).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  const projs=(user.activeProjects||[]).filter(p=>!p.isArchived&&isVisible(p)).sort((a,b)=>((b.rank||0)-(a.rank||0))||new Date(b.createdAt)-new Date(a.createdAt));
   if(!projs.length){
     el.innerHTML='<div class="empty-state" style="padding:32px 0;">No active projects yet. Add one in the left column.</div>';return;
   }
@@ -1665,10 +1871,23 @@ function renderProjectDisplay(){
 }
 
 function scrollToGoal(goalId){
-  // Highlight and scroll to goal in the goals panel
   selectedGoalId=goalId;
   renderGoalsPanel();
-  document.getElementById('goals-panel').scrollIntoView({behavior:'smooth',block:'center'});
+  const panel=document.getElementById('goals-panel');
+  if(panel){
+    panel.scrollIntoView({behavior:'smooth',block:'center'});
+    // Highlight the specific goal item after render
+    setTimeout(()=>{
+      const goalEls=document.querySelectorAll('#goals-list .list-item');
+      goalEls.forEach(el=>{
+        if(el.classList.contains('selected')){
+          el.style.transition='background 0.3s';
+          el.style.background='var(--accent-bg)';
+          setTimeout(()=>{el.style.background='';},1500);
+        }
+      });
+    },200);
+  }
 }
 
 function openNotesEditorModal(projectId){
@@ -1722,11 +1941,13 @@ function saveNotesFromEditor(projectId){
   const lines=[];
   ed.childNodes.forEach(node=>{
     if(node.nodeType===Node.ELEMENT_NODE){
+      // Preserve full innerHTML so bold/italic/links survive round-trips
+      const inner=(node.innerHTML||'');
       const text=(node.innerText||node.textContent||'').trim();
-      // Store innerHTML to preserve formatting/links, but only if non-empty
-      const html=(node.innerHTML||'').replace(/<br\s*\/?>/gi,'').trim();
-      if(html&&html!=='&nbsp;'&&text)lines.push(node.innerHTML);
-      else if(lines.length)lines.push(''); // preserve blank lines between content
+      // Skip pure-empty divs (<br> only)
+      if(inner.replace(/<br\s*\/?>/gi,'').trim()&&text){
+        lines.push(inner);
+      }
     } else if(node.nodeType===Node.TEXT_NODE&&node.textContent.trim()){
       lines.push(node.textContent.trim());
     }
@@ -1912,6 +2133,8 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(!u.settings.quoteSources){u.settings.quoteSources=[];dirty=true;}
     if(!('primaryGoalId' in u.settings)){u.settings.primaryGoalId=null;dirty=true;}
     if(!u.settings.goalTimeframe){u.settings.goalTimeframe='monthly';dirty=true;}
+    if(!u.settings.userType){u.settings.userType='adult';dirty=true;}
+    if(!u.settings.hiddenPanels){u.settings.hiddenPanels=[];dirty=true;}
   });
   if(dirty)saveUsers(users);
 
