@@ -229,6 +229,7 @@ a{color:var(--accent)}
 .ni-acc-item{font-size:0.74rem;color:var(--text2);padding:2px 0;cursor:text}
 .ni-acc-item:hover{color:var(--text)}
 .idx-btn.starred{color:var(--accent)}
+.idx-btn.del-confirm{background:#c0392b!important;color:#fff!important;border-color:#c0392b!important;font-size:0.6rem!important;padding:1px 5px!important}
 .panel.collapsed .pb{display:none}
 .panel.collapsed{height:auto!important}
 .move-dd{position:fixed;z-index:600;background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 20px var(--shadow2);min-width:180px;max-height:260px;overflow-y:auto}
@@ -2217,7 +2218,9 @@ function JournalPanel({user,refreshKey,onNewPanel}){
             onDetail={setDetailItem}
             onPromote={handlePromote}
             onDemote={setDemoteNote}
-            onSaved={reload}/>
+            onSaved={reload}
+            onArchive={async()=>{await DB.archiveNote(n.id).catch(()=>{});reload();}}
+            onDelete={async()=>{await DB.deleteNote(n.id).catch(()=>{});reload();}}/>
         ))}
         <QuickAddNote userId={user.id} category="Journal" onSaved={reload}/>
       </PanelWrap>
@@ -2305,7 +2308,9 @@ function ReviewsPanel({user,onSearch,refreshKey,onNewPanel}){
             onDetail={setDetailItem}
             onPromote={handlePromote}
             onDemote={setDemoteNote}
-            onSaved={reload}/>
+            onSaved={reload}
+            onArchive={async()=>{await DB.archiveNote(n.id).catch(()=>{});reload();}}
+            onDelete={async()=>{await DB.deleteNote(n.id).catch(()=>{});reload();}}/>
         ))}
         <QuickAddNote userId={user.id} category="Reviews" onSaved={reload}/>
       </PanelWrap>
@@ -2668,15 +2673,24 @@ function MoveToPanelModal({note,user,onSave,onClose}){
 // NOTE CARD INLINE — inline-editable note card for home panels
 // onDetail: opens DetailView directly from the homepage
 // ═══════════════════════════════════════════════════════════════
-function NoteCardInline({n,user,onEdit,onDetail,onPromote,onDemote,onSaved,dragHandleProps}){
+function NoteCardInline({n,user,onEdit,onDetail,onPromote,onDemote,onSaved,onArchive,onDelete,dragHandleProps}){
   const [editingName,setEditingName]=useState(false);
   const [nameVal,setNameVal]=useState(n.name||'');
   const [expanded,setExpanded]=useState(false);
   const [editingDetail,setEditingDetail]=useState(null);
   const [detailVal,setDetailVal]=useState('');
   const [showMove,setShowMove]=useState(false);
+  const [confirmDel,setConfirmDel]=useState(false);
   const nameRef=useRef();
   const detailRef=useRef();
+  const delTimer=useRef();
+
+  const handleDelClick=e=>{
+    e.stopPropagation();
+    if(confirmDel){clearTimeout(delTimer.current);onDelete&&onDelete(n);}
+    else{setConfirmDel(true);delTimer.current=setTimeout(()=>setConfirmDel(false),3000);}
+  };
+  useEffect(()=>()=>clearTimeout(delTimer.current),[]);
   const det=(n.lines||[]).filter(Boolean);
 
   const saveName=async()=>{
@@ -2746,6 +2760,8 @@ function NoteCardInline({n,user,onEdit,onDetail,onPromote,onDemote,onSaved,dragH
         {onDemote&&<button className="idx-btn" title="Demote to Detail ↓" onClick={e=>{e.stopPropagation();onDemote(n);}}>↓</button>}
         {onDetail&&<button className="idx-btn" title="Detail View (📋)" onClick={e=>{e.stopPropagation();onDetail(n);}}>📋</button>}
         {onEdit&&<button className="idx-btn" title="Edit" onClick={e=>{e.stopPropagation();onEdit(n);}}>✏</button>}
+        {onArchive&&<button className="idx-btn" title="Archive note" onClick={e=>{e.stopPropagation();onArchive(n);}}>🗃</button>}
+        {onDelete&&<button className={`idx-btn${confirmDel?' del-confirm':''}`} title={confirmDel?'Click again to confirm delete':'Delete note'} onClick={handleDelClick}>{confirmDel?'Sure?':'🗑'}</button>}
       </div>
       {showMove&&<MoveToPanelModal note={n} user={user} onSave={onSaved} onClose={()=>setShowMove(false)}/>}
     </div>
@@ -2846,6 +2862,8 @@ function CustomCategoryPanel({user,catId,categoryName,isProject,refreshKey,onCat
             onPromote={promoteToCategory}
             onDemote={setDemoteNote}
             onSaved={reload}
+            onArchive={async()=>{await DB.archiveNote(n.id).catch(()=>{});reload();}}
+            onDelete={async()=>{await DB.deleteNote(n.id).catch(()=>{});reload();}}
             dragHandleProps={makeDragProps(i)}/>
         ))}
         <QuickAddNote userId={user.id} category={categoryName} onSaved={reload}/>
@@ -3016,11 +3034,12 @@ function NoteGridSearchPanel({user,view,onClose}){
       setCats(['all',...DEFAULT_SEARCH_CATS,...extra]);
     });
   },[user.id]);
-  useEffect(()=>{
+  const reloadResults=useCallback(()=>{
     const f={keyword,...(view==='public'?{publicOnly:true}:{})};
     if(catFilter!=='all'){f.category=catFilter;}
     DB.getNotes(user.id,f).then(setResults);
   },[keyword,catFilter,view,user.id]);
+  useEffect(()=>{reloadResults();},[reloadResults]);
   return(
     <FsPanel title="🔍 Search Notes" onClose={onClose}>
       <div style={{maxWidth:700,margin:'0 auto'}}>
@@ -3031,16 +3050,20 @@ function NoteGridSearchPanel({user,view,onClose}){
         </div>
         {results.length===0?<div className="empty">No notes found.</div>:
           results.map(n=>(
-            <div key={n.id} className="ni" onClick={()=>setSelected(n)}>
-              <div className="ni-name">{n.name||'Untitled'}</div>
-              <div className="ni-meta">{n.subCategory||n.category} · {n.date||n.modifiedAt?.slice(0,10)}</div>
-              {n.body&&<div className="ni-body" dangerouslySetInnerHTML={{__html:n.body.replace(/<[^>]+>/g,'').slice(0,120)}}/>}
-              <div className="badges">{n.favorited&&<span className="badge b-fav">★</span>}</div>
+            <div key={n.id} style={{position:'relative'}}>
+              <NoteCardInline n={n} user={user}
+                onEdit={setSelected}
+                onSaved={reloadResults}
+                onArchive={async()=>{await DB.archiveNote(n.id).catch(()=>{});reloadResults();}}
+                onDelete={async()=>{await DB.deleteNote(n.id).catch(()=>{});reloadResults();}}/>
+              <div style={{fontSize:'0.7rem',color:'var(--text3)',padding:'0 8px 4px',marginTop:-4}}>
+                {n.subCategory||n.category}{(n.date||n.modifiedAt)&&' · '+(n.date||n.modifiedAt?.slice(0,10))}
+              </div>
             </div>
           ))
         }
       </div>
-      {selected&&<NoteEditModal user={user} note={selected} onClose={()=>setSelected(null)} onSave={()=>setSelected(null)}/>}
+      {selected&&<NoteEditModal user={user} note={selected} onClose={()=>{setSelected(null);reloadResults();}} onSave={()=>{setSelected(null);reloadResults();}}/>}
     </FsPanel>
   );
 }
