@@ -230,6 +230,10 @@ a{color:var(--accent)}
 .ni-acc-item:hover{color:var(--text)}
 .idx-btn.starred{color:var(--accent)}
 .idx-btn.del-confirm{background:#c0392b!important;color:#fff!important;border-color:#c0392b!important;font-size:0.6rem!important;padding:1px 5px!important}
+.ni-more-menu{position:absolute;top:calc(100% + 3px);right:0;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px;z-index:30;display:flex;flex-direction:column;gap:1px;min-width:140px;box-shadow:0 4px 18px rgba(0,0,0,0.18)}
+.ni-more-item{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:0.78rem;color:var(--text2);background:none;border:none;text-align:left;width:100%;transition:background var(--anim),color var(--anim)}
+.ni-more-item:hover{background:rgba(125,90,60,0.1);color:var(--text)}
+.ni-more-item.fav{color:var(--accent)}
 .panel.collapsed .pb{display:none}
 .panel.collapsed{height:auto!important}
 .move-dd{position:fixed;z-index:600;background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 20px var(--shadow2);min-width:180px;max-height:260px;overflow-y:auto}
@@ -2681,9 +2685,11 @@ function NoteCardInline({n,user,onEdit,onDetail,onPromote,onDemote,onSaved,onArc
   const [detailVal,setDetailVal]=useState('');
   const [showMove,setShowMove]=useState(false);
   const [confirmDel,setConfirmDel]=useState(false);
+  const [showMore,setShowMore]=useState(false);
   const nameRef=useRef();
   const detailRef=useRef();
   const delTimer=useRef();
+  const moreRef=useRef();
 
   const handleDelClick=e=>{
     e.stopPropagation();
@@ -2691,6 +2697,12 @@ function NoteCardInline({n,user,onEdit,onDetail,onPromote,onDemote,onSaved,onArc
     else{setConfirmDel(true);delTimer.current=setTimeout(()=>setConfirmDel(false),3000);}
   };
   useEffect(()=>()=>clearTimeout(delTimer.current),[]);
+  useEffect(()=>{
+    if(!showMore)return;
+    const h=e=>{if(moreRef.current&&!moreRef.current.contains(e.target))setShowMore(false);};
+    document.addEventListener('mousedown',h);
+    return()=>document.removeEventListener('mousedown',h);
+  },[showMore]);
   const det=(n.lines||[]).filter(Boolean);
 
   const saveName=async()=>{
@@ -2753,15 +2765,22 @@ function NoteCardInline({n,user,onEdit,onDetail,onPromote,onDemote,onSaved,onArc
       </div>
       <div className="idx-btns" onClick={e=>e.stopPropagation()}>
         {dragHandleProps&&<span className="drag-handle" title="Drag to reorder" {...dragHandleProps}>⠿</span>}
-        <button className="idx-btn" title="Copy to clipboard" onClick={async e=>{e.stopPropagation();const text=[n.name||'',...(n.lines||[]).filter(Boolean)].join('\n');await navigator.clipboard.writeText(text).catch(()=>{});}} >⎘</button>
-        <button className={`idx-btn${n.favorited?' starred':''}`} title={n.favorited?'Unfavorite':'Favorite'} onClick={async e=>{e.stopPropagation();await DB.updateNote(n.id,{favorited:!n.favorited}).catch(()=>{});onSaved&&onSaved();}}>★</button>
-        <button className="idx-btn" title="Move to panel" onClick={e=>{e.stopPropagation();setShowMove(s=>!s);}}>→</button>
-        {onPromote&&<button className="idx-btn" title="Promote to Panel ↑" onClick={e=>{e.stopPropagation();onPromote(n);}}>↑</button>}
-        {onDemote&&<button className="idx-btn" title="Demote to Detail ↓" onClick={e=>{e.stopPropagation();onDemote(n);}}>↓</button>}
-        {onDetail&&<button className="idx-btn" title="Detail View (📋)" onClick={e=>{e.stopPropagation();onDetail(n);}}>📋</button>}
+        {onDetail&&<button className="idx-btn" title="Detail View" onClick={e=>{e.stopPropagation();onDetail(n);}}>📋</button>}
         {onEdit&&<button className="idx-btn" title="Edit" onClick={e=>{e.stopPropagation();onEdit(n);}}>✏</button>}
-        {onArchive&&<button className="idx-btn" title="Archive note" onClick={e=>{e.stopPropagation();onArchive(n);}}>🗃</button>}
-        {onDelete&&<button className={`idx-btn${confirmDel?' del-confirm':''}`} title={confirmDel?'Click again to confirm delete':'Delete note'} onClick={handleDelClick}>{confirmDel?'Sure?':'🗑'}</button>}
+        {onDelete&&<button className={`idx-btn${confirmDel?' del-confirm':''}`} title={confirmDel?'Click again to confirm':'Delete'} onClick={handleDelClick}>{confirmDel?'Sure?':'🗑'}</button>}
+        <div style={{position:'relative'}} ref={moreRef}>
+          <button className="idx-btn" title="More actions" onClick={e=>{e.stopPropagation();setShowMore(s=>!s);}}>⋯</button>
+          {showMore&&(
+            <div className="ni-more-menu">
+              <button className={`ni-more-item${n.favorited?' fav':''}`} onClick={async e=>{e.stopPropagation();await DB.updateNote(n.id,{favorited:!n.favorited}).catch(()=>{});onSaved&&onSaved();setShowMore(false);}}>★ {n.favorited?'Unfavorite':'Favorite'}</button>
+              {onArchive&&<button className="ni-more-item" onClick={e=>{e.stopPropagation();onArchive(n);setShowMore(false);}}>🗃 Archive</button>}
+              <button className="ni-more-item" onClick={e=>{e.stopPropagation();setShowMove(true);setShowMore(false);}}>→ Move to panel</button>
+              <button className="ni-more-item" onClick={async e=>{e.stopPropagation();const text=[n.name||'',...(n.lines||[]).filter(Boolean)].join('\n');await navigator.clipboard.writeText(text).catch(()=>{});setShowMore(false);}}>⎘ Copy text</button>
+              {onPromote&&<button className="ni-more-item" onClick={e=>{e.stopPropagation();onPromote(n);setShowMore(false);}}>↑ Promote</button>}
+              {onDemote&&<button className="ni-more-item" onClick={e=>{e.stopPropagation();onDemote(n);setShowMore(false);}}>↓ Demote</button>}
+            </div>
+          )}
+        </div>
       </div>
       {showMove&&<MoveToPanelModal note={n} user={user} onSave={onSaved} onClose={()=>setShowMove(false)}/>}
     </div>
