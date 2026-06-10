@@ -303,6 +303,8 @@ a{color:var(--accent)}
 .dv-top-thesis-label{font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
 .dv-cell{background:var(--panel-bg);border:1px solid var(--border);border-radius:var(--r);
   padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-height:90px}
+.proj-grid{display:grid;gap:var(--gap);padding:12px}
+.proj-grid>*{min-width:0}
 .dv-sub{padding-left:12px;border-left:2px solid var(--border);margin-top:6px;display:flex;flex-direction:column;gap:3px}
 .dv-sub-item{font-size:0.75rem;color:var(--text2);padding:2px 0}
 /* Item action popup */
@@ -3877,7 +3879,7 @@ function ProjectView({user,categoryName,catId,onClose,onRefresh}){
             <div style={{fontSize:'0.85rem',color:'var(--text3)',marginBottom:16}}>No notes yet.</div>
             <button className="add-btn" onClick={addNew}>＋ Add Note</button>
           </div>
-        :<div style={{display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gap:'var(--gap)',padding:'12px'}}>
+        :<div className="proj-grid" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
           {notes.map(note=>(
             <ProjectNoteCard key={note.id} note={note} user={user}
               showSublines={showSublines}
@@ -3907,47 +3909,55 @@ function ProjectView({user,categoryName,catId,onClose,onRefresh}){
 }
 
 function ProjectNoteCard({note,user,onUpdateLine,onUpdateLD,onEdit,onArchive,showSublines=true}){
-  const lines=(note.lines||[]).length>0?note.lines:['','','','',''];
+  const lines=(note.lines||[]).length>0?note.lines:[''];
   const lineDetails=note.lineDetails||[];
-  const [expanded,setExpanded]=useState(true);
+  const [expanded,setExpanded]=useState(false);
   return(
-    <div className="dv-cell" style={{display:'flex',flexDirection:'column',gap:0}}>
-      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,paddingBottom:6,borderBottom:'1px solid var(--border)'}}>
-        <span style={{fontFamily:'var(--font-h)',fontWeight:700,fontSize:'0.88rem',color:'var(--text)',flex:1,
-          overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{note.name||'Untitled'}</span>
-        <button onClick={()=>setExpanded(e=>!e)}
-          style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',fontSize:'0.75rem',padding:'2px 4px'}}
-          title={expanded?'Collapse':'Expand'}>{expanded?'▲':'▼'}</button>
-        <button onClick={onEdit}
-          style={{background:'none',border:'1px solid var(--border)',borderRadius:'var(--r)',color:'var(--text3)',
-            cursor:'pointer',fontSize:'0.7rem',padding:'2px 6px'}}
-          onMouseEnter={e=>e.target.style.borderColor='var(--accent)'}
-          onMouseLeave={e=>e.target.style.borderColor='var(--border)'}>✏️</button>
+    <div className="ni" style={{minWidth:0,position:'relative'}}>
+      <div style={{display:'flex',alignItems:'center',gap:4,cursor:'pointer'}} onClick={()=>setExpanded(e=>!e)}>
+        {note.favorited&&<span style={{color:'var(--accent)',fontSize:'0.75rem',flexShrink:0}}>★</span>}
+        <span className="ni-name" style={{flex:1,minWidth:0}}>{note.name||'Untitled'}</span>
+        <span style={{fontSize:'0.6rem',color:'var(--text3)',flexShrink:0,opacity:0.5}}>{expanded?'▲':'▼'}</span>
       </div>
-      {expanded&&lines.map((line,li)=>(
-        <div key={li} style={{marginBottom:showSublines?6:3}}>
-          <div style={{display:'flex',alignItems:'flex-start',gap:4}}>
-            <span style={{fontSize:'0.6rem',color:'var(--text3)',fontWeight:700,minWidth:14,paddingTop:5,textAlign:'center'}}>{li+1}</span>
-            <div style={{flex:1}}>
-              <textarea value={line||''} rows={1}
-                onChange={e=>onUpdateLine(li,e.target.value)}
-                style={{width:'100%',border:'none',borderBottom:'1px solid var(--border)',borderRadius:0,
-                  padding:'3px 2px',resize:'none',background:'transparent',color:'var(--text)',
-                  fontSize:'0.82rem',fontFamily:'var(--font)',outline:'none',overflow:'hidden'}}
-                onInput={e=>{e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px';}}/>
-              {showSublines&&<div className="dv-sub">
-                {[0,1,2,3,4].map(di=>(
-                  <input key={di} value={(lineDetails[li]||[])[di]||''}
-                    onChange={e=>onUpdateLD(li,di,e.target.value)}
-                    className="dv-sub-item"
-                    style={{border:'none',borderBottom:'1px solid var(--border)',background:'transparent',
-                      color:'var(--text2)',outline:'none',padding:'2px 4px',fontSize:'0.72rem',width:'100%'}}/>
-                ))}
-              </div>}
+      <div className="idx-btns" onClick={e=>e.stopPropagation()}>
+        <button className="idx-btn" title={expanded?'Collapse':'Expand lines'} onClick={e=>{e.stopPropagation();setExpanded(v=>!v);}}>{expanded?'▲':'▼'}</button>
+        <button className="idx-btn" title="Edit" onClick={e=>{e.stopPropagation();onEdit();}}>✏</button>
+        {onArchive&&<button className="idx-btn" title="Archive" onClick={e=>{e.stopPropagation();onArchive();}}>🗃</button>}
+      </div>
+      {expanded&&(
+        <div style={{marginTop:8,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+          {lines.map((line,li)=>(
+            <div key={li} style={{marginBottom:showSublines?8:3}}>
+              <div style={{display:'flex',alignItems:'flex-start',gap:4}}>
+                <span style={{fontSize:'0.6rem',color:'var(--text3)',fontWeight:700,minWidth:14,
+                  paddingTop:4,textAlign:'right',flexShrink:0}}>{li+1}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <textarea value={line||''} rows={1}
+                    onChange={e=>onUpdateLine(li,e.target.value)}
+                    style={{width:'100%',border:'none',borderBottom:'1px solid var(--border)',borderRadius:0,
+                      padding:'3px 0',resize:'none',background:'transparent',color:'var(--text)',
+                      fontSize:'0.82rem',fontFamily:'var(--font)',outline:'none',overflow:'hidden',
+                      display:'block',boxSizing:'border-box'}}
+                    onInput={e=>{e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px';}}/>
+                  {showSublines&&<div className="dv-sub">
+                    {[0,1,2,3,4].map(di=>(
+                      <input key={di} value={(lineDetails[li]||[])[di]||''}
+                        onChange={e=>onUpdateLD(li,di,e.target.value)}
+                        className="dv-sub-item"
+                        style={{border:'none',borderBottom:'1px solid var(--border)',background:'transparent',
+                          color:'var(--text2)',outline:'none',padding:'2px 0',
+                          fontSize:'0.72rem',width:'100%',display:'block',boxSizing:'border-box'}}/>
+                    ))}
+                  </div>}
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
+          <button style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',
+            fontSize:'0.75rem',marginTop:6,padding:'2px 0',display:'block'}}
+            onClick={e=>{e.stopPropagation();onUpdateLine(lines.length,'');}}>＋ add line</button>
         </div>
-      ))}
+      )}
     </div>
   );
 }
