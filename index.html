@@ -3911,7 +3911,7 @@ function ProjectView({user,categoryName,catId,onClose,onRefresh}){
 function ProjectNoteCard({note,user,onUpdateLine,onUpdateLD,onEdit,onArchive,showSublines=true}){
   const lines=(note.lines||[]).length>0?note.lines:[''];
   const lineDetails=note.lineDetails||[];
-  const [expanded,setExpanded]=useState(false);
+  const [expanded,setExpanded]=useState(true);
   return(
     <div className="ni" style={{minWidth:0,position:'relative'}}>
       <div style={{display:'flex',alignItems:'center',gap:4,cursor:'pointer'}} onClick={()=>setExpanded(e=>!e)}>
